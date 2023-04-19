@@ -1,14 +1,20 @@
-targetScope = 'subscription'
+targetScope           = 'subscription'
 
+// Parameters
+//
 param location string = 'eastus2'
 @maxLength(15)
-param purpose string = 'sysdig'
-param cidr string = '10.175.0.0/20'
+param purpose string  = 'sysdig'
+param cidr string     = '10.175.0.0/20'
 
-var rgName = 'rg-${location}-${purpose}'
+// Variables
+//
+var rgName        = 'rg-${location}-${purpose}'
 var publicKeyData = loadTextContent('../../aks.pub')
 
-module aksNaming 'nameFix.bicep' = {
+// Create names for resources
+//
+module aksNaming 'naming.bicep' = {
   scope: rg
   name: 'make-aksName'
   params: {
@@ -18,7 +24,17 @@ module aksNaming 'nameFix.bicep' = {
   }
 }
 
-module vnetNaming 'nameFix.bicep' = {
+module acrNaming 'naming.bicep' = {
+  scope: rg
+  name: 'make-acrName'
+  params: {
+    location: rg.location
+    name: purpose
+    resourceType: 'acr' 
+  }
+}
+
+module vnetNaming 'naming.bicep' = {
   scope: rg
   name: 'make-vnetName'
   params: {
@@ -28,6 +44,8 @@ module vnetNaming 'nameFix.bicep' = {
   }
 }
 
+// Create resources
+//
 resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
   name: rgName
   location: location
@@ -39,7 +57,7 @@ module aksVNet 'aksVNet.bicep' = {
   params: {
     cidr: cidr
     location: rg.location
-    name: vnetNaming.outputs.fixedName
+    name: vnetNaming.outputs.resourceName
   }
 }
 
@@ -48,8 +66,17 @@ module aks 'aks.bicep' = {
   name: 'deploy-aks'
   params: {
     location: rg.location
-    name: aksNaming.outputs.fixedName
+    name: aksNaming.outputs.resourceName
     publicKey: publicKeyData
     subnetId: aksVNet.outputs.subnetId
+  }
+}
+
+module acr 'acr.bicep' = {
+  scope: rg
+  name: 'deploy-acr'
+  params: {
+    acrName: acrNaming.outputs.resourceName
+    location: rg.location
   }
 }

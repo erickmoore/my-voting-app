@@ -4,10 +4,11 @@ param location string
 @allowed([
   'aks'
   'vnet'
+  'acr'
 ])
 param resourceType string
 
 var replaceSpace = replace(name, ' ', '-')
 var replaceName = '${resourceType}-${location}-${replaceSpace}'
 
-output fixedName string = replaceName
+output resourceName string = replaceName

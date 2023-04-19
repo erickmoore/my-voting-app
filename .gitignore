@@ -4,7 +4,6 @@ bin/
 obj/
 .vs/
 node_modules/
-aks.pub
 aks.private
 *.private
 terraform/.terraform
