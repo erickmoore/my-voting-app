@@ -36,7 +36,7 @@ jobs:
     - name: Deploy Azure Container Instance
       id: createInfra
       run: |
-        az deployment sub create --location eastus2 --template-file templates/main.bicep
+        az deployment sub create --location eastus2 --template-file templates/bicep/main.bicep
 
     - name: Build and Export Local Container
       run: |
