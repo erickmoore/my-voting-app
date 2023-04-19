@@ -65,7 +65,7 @@ jobs:
         USER_NAME=$(az ad sp list --display-name $SERVICE_PRINCIPAL_NAME --query "[].appId" --output tsv)        
 
     - name: Login to registry
-      uses: docker/login-action@v12
+      uses: docker/login-action@v2
       with:
         registry: ${{ steps.createInfra.outputs.acrEndpoint }}
         username: ${{ secrets.AZURE_CREDENTIALS.clientId }}
