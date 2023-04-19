@@ -49,18 +49,12 @@ jobs:
         acr_resource_id=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.acrId.value' --output tsv)
         acr_endpoint=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.acrEndpoint.value' --output tsv)
 
-        clientId=$(echo ${{ secrets.AZURE_CREDENTIALS }} | jq -r '.clientId')
-        clientSecret=$(echo ${{ secrets.AZURE_CREDENTIALS }} | jq -r '.clientSecret')
-
         # // Attach using acr-resource-id
         #     az aks update -n $aks_name -g $rg_name --attach-acr $acr_resource_id
 
         # // Export output variables
         echo "::set-output name=acr_resource_id::$acr_resource_id"
         echo "::set-output name=acr_endpoint::$acr_endpoint"
-        echo "::set-output name=client_id::$clientId"
-        echo "::set-output name=client_secret::$clientSecret"
-        
 
     - name: Build and Export Local Containers
       run: |
@@ -72,8 +66,8 @@ jobs:
       uses: docker/login-action@v2
       with:
         registry: ${{ steps.createInfra.outputs.acr_endpoint }}
-        username: ${{ steps.createInfra.outputs.client_id }}
-        password: ${{ steps.createInfra.outputs.client_secret }}
+        username: ${{ secrets.ARM_CLIENT_ID }}
+        password: ${{ secrets.ARM_CLIENT_SECRET }}
 
     - name: Tag and push
       run: |
