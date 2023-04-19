@@ -41,7 +41,7 @@ jobs:
       id: createInfra
       run: |
         # // Deploy templates
-        # az deployment sub create --name ${{ env.DEPLOY_NAME }} --location eastus2 --template-file templates/bicep/main.bicep
+        #     az deployment sub create --name ${{ env.DEPLOY_NAME }} --location eastus2 --template-file templates/bicep/main.bicep
         
         # // Get names from deployment output
         rg_name=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.rgName.value' --output tsv)
@@ -50,7 +50,7 @@ jobs:
         acr_endpoint=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.acrEndpoint.value' --output tsv)
 
         # // Attach using acr-resource-id
-        az aks update -n $aks_name -g $rg_name --attach-acr $acr_resource_id
+        #     az aks update -n $aks_name -g $rg_name --attach-acr $acr_resource_id
 
         # // Export output variables
         echo "::set-output name=acr_resource_id::$acr_resource_id"
@@ -58,9 +58,9 @@ jobs:
 
     - name: Build and Export Local Containers
       run: |
-        docker build worker/Dockerfile -t ${{ env.WORKER_IMG }}:local
-        docker build vote/Dockerfile -t ${{ env.VOTE_IMG }}:local
-        docker build result/Dockerfile -t ${{ env.RESULT_IMG }}:local
+        docker build . -t ${{ env.WORKER_IMG }}:local -f worker/
+        docker build . -t ${{ env.VOTE_IMG }}:local -f vote/
+        docker build . -t ${{ env.RESULT_IMG }}:local -f result/
 
     - name: Create ACR Push Service Principal
       run: |
