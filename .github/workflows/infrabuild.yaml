@@ -16,6 +16,7 @@ permissions:
   contents: read
 
 env:
+  DEPLOY_NAME: sysdigvoteapp
   WORKER_IMG: voteapp/worker
   VOTE_IMG: voteapp/vote
   RESULT_IMG: voteapp/result
@@ -36,20 +37,22 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Deploy Azure Container Instance
+    - name: Deploy Azure Infrastructure
       id: createInfra
       run: |
-        # Deploy templates
-        az deployment sub create --name sysdigvoteapp  --location eastus2 --template-file templates/bicep/main.bicep
+        # // Deploy templates
+        az deployment sub create --name ${{ env.DEPLOY_NAME }}  --location eastus2 --template-file templates/bicep/main.bicep
         
-        # Get ACR resource ID and endpoint from deployment output
-        acr_resource_id=$(az deployment sub show --name sysdigvoteapp --query 'properties.outputs.acrId.value' --output tsv)
-        acr_endpoint=$(az deployment sub show --name sysdigvoteapp --query 'properties.outputs.acrEndpoint.value' --output tsv)
+        # // Get names from deployment output
+        rg_name=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.rgName.value' --output tsv)
+        aks_name=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.aksName.value' --output tsv)
+        acr_resource_id=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.acrId.value' --output tsv)
+        acr_endpoint=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.acrEndpoint.value' --output tsv)
 
-        # Attach using acr-resource-id
-        az aks update -n myAKSCluster -g myResourceGroup --attach-acr acr_resource_id
+        # // Attach using acr-resource-id
+        az aks update -n $aks_name -g $rg_name --attach-acr $acr_resource_id
 
-        # Export output variables
+        # // Export output variables
         echo "::set-output name=acr_resource_id::$acr_resource_id"
         echo "::set-output name=acr_endpoint::$acr_endpoint"
 
