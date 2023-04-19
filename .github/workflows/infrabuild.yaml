@@ -33,29 +33,22 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Deploy Azure Container Instance
+      id: createInfra
       run: |
-        az deployment sub create --location eastus2 --template-file Infrastructure/main.bicep
+        az deployment sub create --location eastus2 --template-file templates/main.bicep
 
-  Build-Container:
-    needs: Build-Infrastructure
-    runs-on: ubuntu-latest
-    steps:
+    - name: Build and Export Local Container
+      run: |
+        docker build . -t ${{ env.IMAGE_NAME }}:local
 
-      - name: Checkout
-        uses: actions/checkout@v3
+    - name: Login to registry
+      uses: docker/login-action@v1
+      with:
+        registry: ${{ steps.createInfra.outputs.acrEndpoint }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: Build and Export Local Container
-        run: |
-          docker build . -t ${{ env.IMAGE_NAME }}:local
-
-      - name: Login to registry
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ACR_ENDPOINT }}
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
-
-      - name: Tag and push
-        run: |
-          docker tag ${{ env.IMAGE_NAME }}:local ${{ secrets.ACR_ENDPOINT }}/${{ env.IMAGE_NAME }}
-          docker push ${{ secrets.ACR_ENDPOINT }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+    - name: Tag and push
+      run: |
+        docker tag ${{ env.IMAGE_NAME }}:local ${{ secrets.ACR_ENDPOINT }}/${{ env.IMAGE_NAME }}
+        docker push ${{ secrets.ACR_ENDPOINT }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}

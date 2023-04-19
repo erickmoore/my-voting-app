@@ -80,3 +80,5 @@ module acr 'acr.bicep' = {
     location: rg.location
   }
 }
+
+output acrEndpoint string = acr.outputs.acrEndpoint
