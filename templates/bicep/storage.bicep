@@ -1,11 +1,11 @@
 param name      string
 param location  string
 @allowed([
-  'Standard_RAGZRS'
+  'Standard_RAGRS'
   'Standard_GRS'
   'Standard_LRS'
 ])
-param sku       string = 'Standard_RAGZRS'
+param sku       string = 'Standard_RAGRS'
 param container string = 'tfstate'
 
 resource stg 'Microsoft.Storage/storageAccounts@2022-09-01' = {
