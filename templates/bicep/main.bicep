@@ -93,5 +93,5 @@ module stg 'storage.bicep' = {
 
 output acrEndpoint  string = acr.outputs.acrEndpoint
 output acrId        string = acr.outputs.acrId
-output aksName      string = aks.name
+output aksName      string = aksNaming.outputs.resourceName
 output rgName       string = rg.name
