@@ -60,12 +60,7 @@ jobs:
       run: |
         docker build worker/ -t ${{ env.WORKER_IMG }}:local
         docker build vote/ -t ${{ env.VOTE_IMG }}:local
-        docker build result/ -t ${{ env.RESULT_IMG }}:local
-
-    - name: Create ACR Push Service Principal
-      run: |
-        PASSWORD=$(az ad sp create-for-rbac --name $SERVICE_PRINCIPAL_NAME --scopes $ACR_REGISTRY_ID --role acrpull --query "password" --output tsv)
-        USER_NAME=$(az ad sp list --display-name $SERVICE_PRINCIPAL_NAME --query "[].appId" --output tsv)        
+        docker build result/ -t ${{ env.RESULT_IMG }}:local   
 
     - name: Login to registry
       uses: docker/login-action@v2
