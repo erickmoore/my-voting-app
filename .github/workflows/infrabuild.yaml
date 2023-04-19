@@ -49,6 +49,10 @@ jobs:
         acr_resource_id=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.acrId.value' --output tsv)
         acr_endpoint=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.acrEndpoint.value' --output tsv)
 
+        echo "getting these names"
+        echo $aks_name
+        echo $rg_name
+
         # // Attach using acr-resource-id
         az aks update -n $aks_name -g $rg_name --attach-acr $acr_resource_id
 
