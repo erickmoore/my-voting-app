@@ -2,10 +2,10 @@ targetScope           = 'subscription'
 
 // Parameters
 //
-param location string = 'eastus2'
+param location  string = 'eastus2'
 @maxLength(15)
-param purpose string  = 'sysdig'
-param cidr string     = '10.175.0.0/20'
+param purpose   string = 'sysdig'
+param cidr      string = '10.175.0.0/20'
 
 // Variables
 //

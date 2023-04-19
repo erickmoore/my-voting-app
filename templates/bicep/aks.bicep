@@ -1,23 +1,16 @@
-param location string = 'eastus2'
+param location  string = 'eastus2'
 param adminName string = 'linadmin'
-param name string
-param subnetId string
+param name      string
+param subnetId  string
 param publicKey string
 
 @allowed([
   'Standard_B2ms'
 ])
-param vmSize string = 'Standard_B2ms'
+param vmSize    string = 'Standard_B2ms'
 
 @maxValue(3)
 param nodeCount int = 3
-
-@allowed([
-  0
-  32
-  64
-])
-param osDiskSizeGb int = 32
 
 resource aks 'Microsoft.ContainerService/managedClusters@2023-02-01' = {
   name: name

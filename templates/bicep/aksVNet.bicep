@@ -1,6 +1,6 @@
-param location string
-param name string
-param cidr string
+param location  string
+param name      string
+param cidr      string
 
 
 resource vnet 'Microsoft.Network/virtualNetworks@2022-09-01' = {

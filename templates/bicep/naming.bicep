@@ -8,7 +8,8 @@ param location string
 ])
 param resourceType string
 
-var replaceSpace = replace(name, ' ', '-')
-var replaceName = '${resourceType}-${location}-${replaceSpace}'
+var replaceSpace  = replace(name, ' ', '-')
+var replaceName   = toLower('${resourceType}-${location}-${replaceSpace}') 
+var fullName      = contains('acr', resourceType) ? replace(replaceName, '-', '') : replaceName
 
-output resourceName string = replaceName
+output resourceName string = fullName
