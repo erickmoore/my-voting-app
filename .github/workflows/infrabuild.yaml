@@ -19,10 +19,10 @@ env:
   DEPLOY_NAME: sysdigvoteapp
   WORKER_IMG: voteapp/worker
   VOTE_IMG: voteapp/vote
-  RESULT_IMG: voteapp/result
-
+  RESULT_IMG: voteapp/result 
   VERSION: latest
-
+  SYSDIG_API_URL: https://app.us4.sysdig.com/
+  SYSDIG_LINUX_BINARY: "https://download.sysdig.com/scanning/bin/sysdig-cli-scanner/$(curl -L -s https://download.sysdig.com/scanning/sysdig-cli-scanner/latest_version.txt)/linux/amd64/sysdig-cli-scanner"
 jobs:
 
   Build-Infrastructure:
@@ -56,6 +56,12 @@ jobs:
         echo "::set-output name=acr_resource_id::$acr_resource_id"
         echo "::set-output name=acr_endpoint::$acr_endpoint"
 
+    - name: Download Sysdig and Scan Images
+      run: |
+        export SECURE_API_TOKEN={{ secrets.SYSDIG_SECURE_TOKEN }}
+        curl -LO ${{  env.SYSDIG_LINUX_BINARY }}
+        ./sysdig-cli-scanner --apiurl {{ env.SYSDIG_API_URL }} ${{ env.WORKER_IMG }}:local
+
     - name: Build and Export Local Containers
       run: |
         pwd
@@ -64,15 +70,6 @@ jobs:
         docker images
         #docker buildx build vote/ -t ${{ env.VOTE_IMG }}:local
         #docker buildx build result/ -t ${{ env.RESULT_IMG }}:local
-
-    - name: Sysdig Secure Inline Scan
-      uses: sysdiglabs/scan-action@v3.5.0
-      with:
-        image-tag: ${{ env.WORKER_IMG }}:local
-        sysdig-secure-token: ${{ secrets.SYSDIG_SECURE_TOKEN }}
-        input-type: docker-daemon
-        dockerfile-path: worker/
-        run-as-user: root
 
     - name: Login to registry
       uses: docker/login-action@v2
