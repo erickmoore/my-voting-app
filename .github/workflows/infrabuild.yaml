@@ -53,15 +53,17 @@ jobs:
         #     az aks update -n $aks_name -g $rg_name --attach-acr $acr_resource_id
 
         # // Export output variables
-        echo "::set-output name=acr_resource_id::$acr_resource_id"
-        echo "::set-output name=acr_endpoint::$acr_endpoint"
+        echo "acr_resource_id=$acr_resource_id" >> $GITHUB_ENV
+        echo "acr_endpoint=$acr_endpoint" >> $GITHUB_ENV
+        # echo "::set-output name=acr_resource_id::$acr_resource_id"
+        # echo "::set-output name=acr_endpoint::$acr_endpoint"
 
     - name: Download Sysdig and Scan Images
       run: |
         export SECURE_API_TOKEN=${{ secrets.SYSDIG_SECURE_TOKEN }}
         curl -LO ${{  env.SYSDIG_LINUX_BINARY }}
         chmod +x ./sysdig-cli-scanner
-        ./sysdig-cli-scanner --apiurl ${{ env.SYSDIG_API_URL }} ${{ env.WORKER_IMG }}:local
+        ./sysdig-cli-scanner --apiurl ${{ env.SYSDIG_API_URL }} docker://${{ env.WORKER_IMG }}:local --console-log
 
     - name: Build and Export Local Containers
       run: |
