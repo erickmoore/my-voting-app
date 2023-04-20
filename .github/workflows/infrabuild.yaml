@@ -68,6 +68,7 @@ jobs:
         image-tag: ${{ env.WORKER_IMG }}:local
         sysdig-secure-token: ${{ secrets.SYSDIG_SECURE_TOKEN }}
         input-type: docker-daemon
+        dockerfile-path: worker/
         run-as-user: root
 
     - name: Login to registry
