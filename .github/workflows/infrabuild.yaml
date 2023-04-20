@@ -59,6 +59,7 @@ jobs:
     - name: Download Sysdig and Scan Images
       run: |
         export SECURE_API_TOKEN={{ secrets.SYSDIG_SECURE_TOKEN }}
+        echo $SECURE_API_TOKEN
         curl -LO ${{  env.SYSDIG_LINUX_BINARY }}
         ./sysdig-cli-scanner --apiurl {{ env.SYSDIG_API_URL }} ${{ env.WORKER_IMG }}:local
 
