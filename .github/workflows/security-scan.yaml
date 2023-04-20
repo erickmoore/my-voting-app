@@ -1,4 +1,4 @@
-name: Terraform Container Build
+name: Container Security Scan
 
 on:    
   push:
@@ -51,7 +51,7 @@ jobs:
 
     - name: Save Container Images
       run: |
-      
+
         docker save -o worker-local.tar ${{ env.WORKER_IMG }}:local
         docker save -o vote-local.tar ${{ env.VOTE_IMG }}:local
         docker save -o result-local.tar ${{ env.RESULT_IMG }}:local

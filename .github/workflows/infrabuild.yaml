@@ -1,4 +1,4 @@
-name: Terraform Container Build
+name: Create Infrastucture And Push Images
 
 on:    
   pull_request:
