@@ -60,6 +60,7 @@ jobs:
       run: |
         export SECURE_API_TOKEN=${{ secrets.SYSDIG_SECURE_TOKEN }}
         curl -LO ${{  env.SYSDIG_LINUX_BINARY }}
+        chmod +x ./sysdig-cli-scanner
         ./sysdig-cli-scanner --apiurl ${{ env.SYSDIG_API_URL }} ${{ env.WORKER_IMG }}:local
 
     - name: Build and Export Local Containers
