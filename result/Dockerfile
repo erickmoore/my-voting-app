@@ -18,10 +18,10 @@ COPY package*.json ./
 RUN rm -f package-lock.json
 
 RUN npm install \
+ && mv /app/node_modules /node_modules \
  && npm install debug@4.3.1 \
- && npm cache clean --force \
- && mv /app/node_modules /node_modules
-
+ && npm cache clean --force
+ 
 COPY . .
 
 ENV PORT 80
