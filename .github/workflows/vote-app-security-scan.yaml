@@ -22,7 +22,7 @@ jobs:
   PR-Check:
     runs-on: ubuntu-latest
     outputs:
-      has_open_pr: ${{ steps.check_pr.outputs.has_open_pr }}
+      has_open_pr: ${{ steps.PR-Check.outputs.has_open_pr }}
     steps:
     - name: Install jq
       run: sudo apt-get install -y jq
