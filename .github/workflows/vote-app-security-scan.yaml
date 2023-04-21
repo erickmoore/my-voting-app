@@ -4,6 +4,7 @@ on:
   push:
     branches-ignore:
       - main
+
   workflow_dispatch:
 
 permissions:
@@ -19,6 +20,7 @@ env:
 jobs:
 
   Setup:
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.pull_request == null)
     runs-on: ubuntu-latest
     steps:
 

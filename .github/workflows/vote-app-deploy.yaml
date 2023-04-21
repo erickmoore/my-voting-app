@@ -69,16 +69,16 @@ jobs:
 
         #kubectl create ns sysdig-agent
 
-        helm repo add sysdig https://charts.sysdig.com
-        helm repo update
-        helm install sysdig-agent --namespace sysdig-agent \
-          --set global.sysdig.accessKey=${{ secrets.SYSDIG_SECURE_TOKEN }} \
-          --set global.sysdig.region=us4 \
-          --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
-          --set global.kspm.deploy=true \
-          --set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=false \
-          --set global.clusterConfig.name=aks-eastus2-sysdig \
-          sysdig/sysdig-deploy
+        # helm repo add sysdig https://charts.sysdig.com
+        # helm repo update
+        # helm install sysdig-agent --namespace sysdig-agent \
+        #   --set global.sysdig.accessKey=${{ secrets.SYSDIG_SECURE_TOKEN }} \
+        #   --set global.sysdig.region=us4 \
+        #   --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
+        #   --set global.kspm.deploy=true \
+        #   --set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=false \
+        #   --set global.clusterConfig.name=aks-eastus2-sysdig \
+        #   sysdig/sysdig-deploy
 
     - name: Download Container Images Artifact
       uses: actions/download-artifact@v2
