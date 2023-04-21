@@ -41,7 +41,6 @@ jobs:
 
 
   Build-And-Scan-Images:
-    if: needs.check_pr.outputs.has_open_pr == 'false'
     needs: Setup
     runs-on: ubuntu-latest
     strategy:
