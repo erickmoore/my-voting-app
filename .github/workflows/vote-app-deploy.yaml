@@ -37,6 +37,12 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    - name: Set Azure AKS Context
+      uses: azure/aks-set-context@v3
+      with:
+        resource-group: 'rg-eastus2-sysdig'
+        cluster-name: 'aks-eastus2-sysdig'
+
     - name: Deploy Azure Infrastructure
       id: createInfra
       run: |
