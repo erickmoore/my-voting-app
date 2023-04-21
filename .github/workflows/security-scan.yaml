@@ -42,9 +42,9 @@ jobs:
     - name: Build and Export Local Containers
       run: |
 
-        docker buildx build worker/ -t ${{ env.WORKER_IMG }}:local
-        docker buildx build vote/ -t ${{ env.VOTE_IMG }}:local
-        docker buildx build result/ -t ${{ env.RESULT_IMG }}:local
+        #docker buildx build --no-cache worker/ -t ${{ env.WORKER_IMG }}:local
+        #docker buildx build --no-cache vote/ -t ${{ env.VOTE_IMG }}:local
+        docker buildx build --no-cache result/ -t ${{ env.RESULT_IMG }}:local
     
     - name: Download Sysdig and Scan Images
       continue-on-error: true
