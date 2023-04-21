@@ -77,13 +77,20 @@ jobs:
         #   --set global.clusterConfig.name=aks-eastus2-sysdig \
         #   sysdig/sysdig-deploy
 
-    - name: Download Container Images Artifact
-      uses: actions/download-artifact@v2.1.1
+    - name: Download workflow artifact
+      uses: dawidd6/action-download-artifact@v2.27.0
       with:
-        name: 
-          voteapp_worker
-          voteapp_vote
-          voteapp_result
+        workflow: vote-app-security-scan.yaml
+        workflow_conclusion: completed
+
+
+    # - name: Download Container Images Artifact
+    #   uses: actions/download-artifact@v2.1.1
+    #   with:
+    #     name: 
+    #       voteapp_worker
+    #       voteapp_vote
+    #       voteapp_result
 
     - name: Load Container Images
       run: |
