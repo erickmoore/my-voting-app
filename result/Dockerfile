@@ -15,6 +15,7 @@ RUN npm install -g nodemon
 COPY package*.json ./
 
 RUN npm install \
+ && npm install debug@latest \
  && npm cache clean --force \
  && mv /app/node_modules /node_modules
 
