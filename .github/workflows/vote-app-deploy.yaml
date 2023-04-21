@@ -81,15 +81,18 @@ jobs:
         #   sysdig/sysdig-deploy
 
     - name: Download Container Images Artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v2.1.1
       with:
-        name: container-images
+        name: 
+          voteapp_worker
+          voteapp_vote
+          voteapp_result
 
     - name: Load Container Images
       run: |
-        docker load -i worker-local.tar
-        docker load -i vote-local.tar
-        docker load -i result-local.tar
+        docker load -i voteapp_worker.tar
+        docker load -i voteapp_vote.tar
+        docker load -i voteapp_result.tar
 
 
     - name: Login to registry
@@ -102,16 +105,16 @@ jobs:
     - name: Load and push container images from tarballs
       run: |
 
-        docker load -i worker-local.tar
-        docker tag $(docker images -q worker-local) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
+        docker load -i voteapp_worker.tar
+        docker tag $(docker images -q voteapp_worker) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
         docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
 
-        docker load -i vote-local.tar
-        docker tag $(docker images -q vote-local) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.VOTE_IMG }}:${{ env.VERSION }}
+        docker load -i voteapp_vote.tar
+        docker tag $(docker images -q voteapp_vote) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.VOTE_IMG }}:${{ env.VERSION }}
         docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.VOTE_IMG }}:${{ env.VERSION }}
 
-        docker load -i result-local.tar
-        docker tag $(docker images -q result-local) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
+        docker load -i voteapp_result.tar
+        docker tag $(docker images -q voteapp_result) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
         docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
 
     - name: Deploy Voting App

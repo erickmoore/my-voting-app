@@ -19,8 +19,25 @@ env:
 
 jobs:
 
+  PR-Check:
+    runs-on: ubuntu-latest
+    outputs:
+      has_open_pr: ${{ steps.check_pr.outputs.has_open_pr }}
+    steps:
+    - name: Install jq
+      run: sudo apt-get install -y jq
+    - name: Check for open PRs
+      id: check_pr
+      run: |
+        prs=$(curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/pulls?state=open | jq '.[] | select(.base.ref=="main" and .head.ref=="${{ github.ref }}")')
+        if [[ -z "$prs" ]]; then
+          echo "::set-output name=has_open_pr::false"
+        else
+          echo "::set-output name=has_open_pr::true"
+        fi
+
   Setup:
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.pull_request == null)
+    if: needs.check_pr.outputs.has_open_pr == 'false'
     runs-on: ubuntu-latest
     steps:
 
@@ -42,6 +59,7 @@ jobs:
 
 
   Build-And-Scan-Images:
+    if: needs.check_pr.outputs.has_open_pr == 'false'
     needs: Setup
     runs-on: ubuntu-latest
     strategy:
@@ -81,5 +99,5 @@ jobs:
     - name: Upload Container Tarball Artifacts
       uses: actions/upload-artifact@v3.1.2
       with:
-        name: container-images
+        name: ${{ env.FILENAME }}
         path: "${{ env.FILENAME }}_image.tar"
