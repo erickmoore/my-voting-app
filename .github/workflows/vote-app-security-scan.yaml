@@ -12,7 +12,6 @@ permissions:
 
 env:
   CONTAINERS: '[ "voteapp/worker", "voteapp/vote", "voteapp/result" ]'
-  DEPLOY_NAME: sysdigvoteapp
   VERSION: latest
   SYSDIG_API_URL: https://app.us4.sysdig.com/
   SYSDIG_LINUX_BINARY: "https://download.sysdig.com/scanning/bin/sysdig-cli-scanner/$(curl -L -s https://download.sysdig.com/scanning/sysdig-cli-scanner/latest_version.txt)/linux/amd64/sysdig-cli-scanner"
