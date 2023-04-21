@@ -19,30 +19,7 @@ env:
 
 jobs:
 
-  PR-Check:
-    runs-on: ubuntu-latest
-    outputs:
-      openpr: ${{ steps.check_pr.outputs.has_open_pr }}
-    steps:
-
-    - name: Install jq
-      run: sudo apt-get install -y jq
-
-    - name: Check for open PRs
-      id: check_pr
-      run: |
-
-        prs=$(curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/pulls?state=open | jq '.[] | select(.base.ref=="main" and .head.ref=="refs/heads/${{ github.ref }}")')
-        echo "prs: $prs"
-        if [[ -z "$prs" ]]; then
-          echo "name=has_open_pr::false" >> $GITHUB_ENV
-        else
-          echo "name=has_open_pr::true" >> $GITHUB_ENV
-        fi
-
   Setup:
-    needs: PR-Check
-    if: needs.PR-Check.outputs.openpr == 'false'
     runs-on: ubuntu-latest
     steps:
 

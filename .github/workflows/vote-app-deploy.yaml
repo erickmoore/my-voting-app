@@ -4,10 +4,8 @@ on:
   pull_request:
     branches:
       - main
-      
     types:
       - opened
-      - synchronize      
 
   workflow_dispatch:
 
@@ -62,7 +60,6 @@ jobs:
         # // Export output variables
         echo "acr_resource_id=$acr_resource_id" >> $GITHUB_ENV
         echo "acr_endpoint=$acr_endpoint" >> $GITHUB_ENV
-
 
     - name: Install Sysdig Agents in AKS
       run: |
