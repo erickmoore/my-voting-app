@@ -1,9 +1,9 @@
 name: Container Security Scan
 
 on:    
-  push:
-    branches-ignore:
-      - main
+  # push:
+  #   branches-ignore:
+  #     - main
   workflow_dispatch:
 
 permissions:
@@ -32,18 +32,11 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Clear NPM Dependencies
-      run: |
-
-        npm cache clean --force
-        rm -rf node_modules
-        #rm package-lock.json
-
     - name: Build and Export Local Containers
       run: |
 
-        #docker buildx build --no-cache worker/ -t ${{ env.WORKER_IMG }}:local
-        #docker buildx build --no-cache vote/ -t ${{ env.VOTE_IMG }}:local
+        docker buildx build --no-cache worker/ -t ${{ env.WORKER_IMG }}:local
+        docker buildx build --no-cache vote/ -t ${{ env.VOTE_IMG }}:local
         docker buildx build --no-cache result/ -t ${{ env.RESULT_IMG }}:local
     
     - name: Download Sysdig

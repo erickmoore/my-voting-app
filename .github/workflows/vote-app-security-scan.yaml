@@ -1,0 +1,87 @@
+name: Vote App Security Scan
+
+on:    
+  push:
+    branches-ignore:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  CONTAINERS: '[ "voteapp/worker", "voteapp/vote", "voteapp/result" ]'
+  DEPLOY_NAME: sysdigvoteapp
+  VERSION: latest
+  SYSDIG_API_URL: https://app.us4.sysdig.com/
+  SYSDIG_LINUX_BINARY: "https://download.sysdig.com/scanning/bin/sysdig-cli-scanner/$(curl -L -s https://download.sysdig.com/scanning/sysdig-cli-scanner/latest_version.txt)/linux/amd64/sysdig-cli-scanner"
+
+jobs:
+
+  Setup:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # - name: Azure Login
+    #   uses: azure/login@v1
+    #   with:
+    #     creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Download Sysdig
+      run: |
+
+        curl -LO ${{  env.SYSDIG_LINUX_BINARY }}
+
+    - name: Upload Sysdig binary
+      uses: actions/upload-artifact@v2
+      with:
+        name: sysdig-binary
+        path: ./sysdig-cli-scanner        
+
+
+  Build-And-Scan-Images:
+    needs: Setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        container: ${{ fromJson(env.CONTAINERS) }}
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Download Sysdig binary
+      uses: actions/download-artifact@v2
+      with:
+        name: sysdig-binary      
+
+    - name: Build Local Container
+      run: |
+
+        docker buildx build --no-cache worker/ -t ${{ matrix.container }}:local
+
+    - name: Scan Local Container
+      continue-on-error: true
+      run: |
+
+        chmod +x ./sysdig-cli-scanner
+        SECURE_API_TOKEN=${{ secrets.SYSDIG_SECURE_TOKEN }} ./sysdig-cli-scanner --apiurl ${{ env.SYSDIG_API_URL }} docker://${{ matrix.container }}:local --console-log
+  
+    - name: Save Container Images
+      run: |
+
+        FILENAME=$(echo "${{ matrix.container }}" | envsubst '/')
+        docker save -o ${FILENAME}_image.tar ${{ matrix.container }}:local
+
+    - name: Upload Container Tarball Artifacts
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        name: container-images
+        path: |
+
+          ${FILENAME}_image.tar
