@@ -33,6 +33,7 @@ jobs:
       run: |
 
         prs=$(curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/pulls?state=open | jq '.[] | select(.base.ref=="main" and .head.ref=="refs/heads/${{ github.ref }}")')
+        echo "prs: $prs"
         if [[ -z "$prs" ]]; then
           echo "name=has_open_pr::false" >> $GITHUB_ENV
         else
