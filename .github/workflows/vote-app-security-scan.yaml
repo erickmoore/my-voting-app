@@ -25,11 +25,6 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v3
-
-    # - name: Azure Login
-    #   uses: azure/login@v1
-    #   with:
-    #     creds: ${{ secrets.AZURE_CREDENTIALS }}
     
     - name: Download Sysdig
       run: |
@@ -40,7 +35,9 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: sysdig-binary
-        path: ./sysdig-cli-scanner        
+        path: ./sysdig-cli-scanner
+    outputs:
+      containers: ${{ env.CONTAINERS }}
 
 
   Build-And-Scan-Images:
@@ -49,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        container: ${{ fromJson(env.CONTAINERS) }}
+        container: ${{ fromJson(needs.Setup.outputs.containers) }}
     steps:
 
     - name: Checkout
@@ -63,7 +60,8 @@ jobs:
     - name: Build Local Container
       run: |
 
-        docker buildx build --no-cache worker/ -t ${{ matrix.container }}:local
+        FOLDER_NAME=$(echo "${{ matrix.container }}" | cut -d '/' -f 2)
+        docker buildx build --no-cache $FOLDER_NAME/ -t ${{ matrix.container }}:local
 
     - name: Scan Local Container
       continue-on-error: true
@@ -75,7 +73,7 @@ jobs:
     - name: Save Container Images
       run: |
 
-        FILENAME=$(echo "${{ matrix.container }}" | envsubst '/')
+        FILENAME=$(echo "${{ matrix.container }}" | tr '/' '_')
         docker save -o ${FILENAME}_image.tar ${{ matrix.container }}:local
 
     - name: Upload Container Tarball Artifacts
