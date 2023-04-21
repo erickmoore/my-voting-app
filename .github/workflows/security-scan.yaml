@@ -34,10 +34,10 @@ jobs:
 
     - name: Clear NPM Dependencies
       run: |
-      
+
         npm cache clean --force
         rm -rf node_modules
-        rm package-lock.json
+        #rm package-lock.json
 
     - name: Build and Export Local Containers
       run: |
