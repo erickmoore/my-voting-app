@@ -46,16 +46,30 @@ jobs:
         #docker buildx build --no-cache vote/ -t ${{ env.VOTE_IMG }}:local
         docker buildx build --no-cache result/ -t ${{ env.RESULT_IMG }}:local
     
-    - name: Download Sysdig and Scan Images
-      continue-on-error: true
+    - name: Download Sysdig
       run: |
 
         export SECURE_API_TOKEN=${{ secrets.SYSDIG_SECURE_TOKEN }}
         curl -LO ${{  env.SYSDIG_LINUX_BINARY }}
         chmod +x ./sysdig-cli-scanner
-        #./sysdig-cli-scanner --apiurl ${{ env.SYSDIG_API_URL }} docker://${{ env.WORKER_IMG }}:local --console-log
-        #./sysdig-cli-scanner --apiurl ${{ env.SYSDIG_API_URL }} docker://${{ env.VOTE_IMG }}:local --console-log
-        ./sysdig-cli-scanner --apiurl ${{ env.SYSDIG_API_URL }} docker://${{ env.RESULT_IMG }}:local --console-log
+
+    - name: Scan Worker Container
+      continue-on-error: true
+      run: |
+
+        ./sysdig-cli-scanner --apiurl ${{ env.SYSDIG_API_URL }} docker://${{ env.WORKER_IMG }}:local --console-log
+
+    - name: Scan Vote Container
+      continue-on-error: true
+      run: |
+
+        ./sysdig-cli-scanner --apiurl ${{ env.SYSDIG_API_URL }} docker://${{ env.VOTE_IMG }}:local --console-log
+
+    - name: Scan Result Container
+      continue-on-error: true
+      run: |
+
+        ./sysdig-cli-scanner --apiurl ${{ env.SYSDIG_API_URL }} docker://${{ env.RESULT_IMG }}:local --console-log        
 
     - name: Save Container Images
       run: |
