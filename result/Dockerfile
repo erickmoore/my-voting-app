@@ -14,6 +14,9 @@ RUN npm install -g nodemon
 
 COPY package*.json ./
 
+# Delete the package-lock.json file
+RUN rm -f package-lock.json
+
 RUN npm install \
  && npm install debug@4.3.1 \
  && npm cache clean --force \
