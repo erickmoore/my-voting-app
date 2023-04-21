@@ -74,13 +74,11 @@ jobs:
       run: |
 
         FILENAME=$(echo "${{ matrix.container }}" | tr '/' '_')
+        echo "FILENAME=${FILENAME}" >> $GITHUB_ENV
         docker save -o ${FILENAME}_image.tar ${{ matrix.container }}:local
 
     - name: Upload Container Tarball Artifacts
       uses: actions/upload-artifact@v3.1.2
       with:
         name: container-images
-        path: |
-
-          FILENAME=$(echo "${{ matrix.container }}" | tr '/' '_')
-          ${FILENAME}_image.tar
+        path: "${{ env.FILENAME }}_image.tar"
