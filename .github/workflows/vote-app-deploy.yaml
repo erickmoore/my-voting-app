@@ -1,4 +1,4 @@
-name: Create Infrastucture And Push Images
+name: Create Infrastructure and Deploy Vote App
 
 on:    
   pull_request:
@@ -58,6 +58,22 @@ jobs:
         echo "acr_endpoint=$acr_endpoint" >> $GITHUB_ENV
 
 
+    - name: Install Sysdig Agents in AKS
+      run: |
+
+        #kubectl create ns sysdig-agent
+
+        helm repo add sysdig https://charts.sysdig.com
+        helm repo update
+        helm install sysdig-agent --namespace sysdig-agent \
+          --set global.sysdig.accessKey=${{ secrets.SYSDIG_SECURE_TOKEN }} \
+          --set global.sysdig.region=us4 \
+          --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
+          --set global.kspm.deploy=true \
+          --set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=false \
+          --set global.clusterConfig.name=aks-eastus2-sysdig \
+          sysdig/sysdig-deploy
+
     - name: Download Container Images Artifact
       uses: actions/download-artifact@v2
       with:
@@ -91,6 +107,10 @@ jobs:
         docker load -i result-local.tar
         docker tag $(docker images -q result-local) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
         docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
+
+    - name: Deploy Voting App
+      run: |
+        kubectl create -f k8s-specifications/
 
     # - name: Tag and push
     #   run: |

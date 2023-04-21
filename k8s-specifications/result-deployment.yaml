@@ -15,7 +15,7 @@ spec:
         app: result
     spec:
       containers:
-      - image: dockersamples/examplevotingapp_result
+      - image: acreastus2sysdig.azurecr.io/voteapp/result:latest
         name: result
         ports:
         - containerPort: 80

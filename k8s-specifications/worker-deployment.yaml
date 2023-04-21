@@ -15,5 +15,5 @@ spec:
         app: worker
     spec:
       containers:
-      - image: dockersamples/examplevotingapp_worker
+      - image: acreastus2sysdig.azurecr.io/voteapp/worker:latest
         name: worker
