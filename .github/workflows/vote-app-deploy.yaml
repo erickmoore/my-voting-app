@@ -98,14 +98,11 @@ jobs:
     - name: Load Container Images
       run: |
 
-        pwd
-        ls -la
-        ls -la voteapp_worker/
-
         docker load -i voteapp_worker/voteapp_worker_image.tar
         docker load -i voteapp_vote/voteapp_vote_image.tar
         docker load -i voteapp_result/voteapp_result_image.tar
 
+        docker images
 
     - name: Azure Container Registry Login
       uses: Azure/docker-login@v1.0.1
@@ -117,14 +114,14 @@ jobs:
     - name: Load and push container images from tarballs
       run: |
 
-        docker tag $(docker images -q voteapp_worker_image) ${{ steps.createInfra.outputs.acr_endpoint }}${{ env.WORKER_IMG }}:${{ env.VERSION }}
-        docker push ${{ steps.createInfra.outputs.acr_endpoint }}${{ env.WORKER_IMG }}:${{ env.VERSION }}
+        docker tag voteapp/worker:local ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
+        docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
 
-        docker tag $(docker images -q voteapp_vote_image) ${{ steps.createInfra.outputs.acr_endpoint }}${{ env.VOTE_IMG }}:${{ env.VERSION }}
-        docker push ${{ steps.createInfra.outputs.acr_endpoint }}${{ env.VOTE_IMG }}:${{ env.VERSION }}
+        docker tag voteapp/vote:local ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.VOTE_IMG }}:${{ env.VERSION }}
+        docker push ${{ steps.createInfra.outputs.acr_endpoint }}${{ env.VOTE_IMG }}:/${{ env.VERSION }}
 
-        docker tag $(docker images -q voteapp_result_image) ${{ steps.createInfra.outputs.acr_endpoint }}${{ env.RESULT_IMG }}:${{ env.VERSION }}
-        docker push ${{ steps.createInfra.outputs.acr_endpoint }}${{ env.RESULT_IMG }}:${{ env.VERSION }}
+        docker tag voteapp/result:local ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
+        docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
 
     # - name: Login to registry
     #   uses: docker/login-action@v2
