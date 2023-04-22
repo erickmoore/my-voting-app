@@ -69,11 +69,10 @@ jobs:
     - name: Install Sysdig Agents in AKS
       run: |
 
-        kubectl apply ns sysdig-agent
-
         helm repo add sysdig https://charts.sysdig.com
         helm repo update
         helm upgrade --install sysdig-agent --namespace sysdig-agent \
+          --create-namespace \
           --set global.sysdig.accessKey=${{ secrets.SYSDIG_SECURE_TOKEN }} \
           --set global.sysdig.region=us4 \
           --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
