@@ -102,12 +102,12 @@ jobs:
 
         docker images
 
-    - name: Azure Container Registry Login
-      uses: Azure/docker-login@v1.0.1
+    - name: Login to registry
+      uses: docker/login-action@v2
       with:
-        login-server: ${{ env.acr_endpoint }}
-        username: ${{ secrets.REGISTRY_USERNAME }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
+        registry: ${{ env.acr_endpoint }}
+        username: ${{ secrets.ARM_CLIENT_ID }}
+        password: ${{ secrets.ARM_CLIENT_SECRET }}
 
     - name: Load and push container images from tarballs
       run: |
@@ -121,36 +121,9 @@ jobs:
         docker tag voteapp/result:local ${{ env.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
         docker push ${{ env.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
 
-    # - name: Login to registry
-    #   uses: docker/login-action@v2
-    #   with:
-    #     registry: ${{ steps.createInfra.outputs.acr_endpoint }}
-    #     username: ${{ secrets.ARM_CLIENT_ID }}
-    #     password: ${{ secrets.ARM_CLIENT_SECRET }}
-
-    # - name: Load and push container images from tarballs
-    #   run: |
-
-    #     docker tag $(docker images -q voteapp_worker/voteapp_worker_image) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
-    #     docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
-
-    #     docker tag $(docker images -q voteapp_vote/voteapp_vote_image) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.VOTE_IMG }}:${{ env.VERSION }}
-    #     docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.VOTE_IMG }}:${{ env.VERSION }}
-
-    #     docker tag $(docker images -q voteapp_result/voteapp_result_image) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
-    #     docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
+    #   docker tag $(docker images -q voteapp_worker/voteapp_worker_image) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
 
     - name: Deploy Voting App
       run: |
+
         kubectl create -f k8s-specifications/
-
-    # - name: Tag and push
-    #   run: |
-    #     docker tag ${{ env.WORKER_IMG }}:local ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.WORKER_IMG }}
-    #     docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
-
-    #     docker tag ${{ env.VOTE_IMG }}:local ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.VOTE_IMG }}
-    #     docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.VOTE_IMG }}:${{ env.VERSION }}
-
-    #     docker tag ${{ env.RESULT_IMG }}:local ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.RESULT_IMG }}
-    #     docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}        
