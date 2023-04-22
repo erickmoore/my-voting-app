@@ -105,7 +105,7 @@ jobs:
     - name: Azure Container Registry Login
       uses: Azure/docker-login@v1.0.1
       with:
-        login-server: ${{ steps.createInfra.outputs.acr_endpoint }}
+        login-server: ${{ env.acr_endpoint }}
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
 
