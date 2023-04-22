@@ -29,6 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       containers: ${{ env.CONTAINERS }}
+      acr_endpoint: ${{ env.acr_endpoint }}
     steps:
 
     - name: Checkout
@@ -81,7 +82,7 @@ jobs:
         #   --set global.clusterConfig.name=aks-eastus2-sysdig \
         #   sysdig/sysdig-deploy
 
-  Push-Images-And-Deploy:
+  Push-Images-to-ACR:
     runs-on: ubuntu-latest
     needs: Build-Infrastructure
     strategy:
@@ -95,46 +96,46 @@ jobs:
       with:
         workflow: vote-app-security-scan.yaml
         workflow_conclusion: completed
-
-
-    # - name: Download Container Images Artifact
-    #   uses: actions/download-artifact@v2.1.1
-    #   with:
-    #     name: 
-    #       voteapp_worker
-    #       voteapp_vote
-    #       voteapp_result
+        name: ${{ matrix.container }}
 
     - name: Load Container Images
       run: |
 
-        docker load -i voteapp_worker/voteapp_worker_image.tar
-        docker load -i voteapp_vote/voteapp_vote_image.tar
-        docker load -i voteapp_result/voteapp_result_image.tar
-
-        docker images
+        docker load -i ${{ matrix.container }}/${{ matrix.container }}_image.tar
+        # docker load -i voteapp_worker/voteapp_worker_image.tar
+        # docker load -i voteapp_vote/voteapp_vote_image.tar
+        # docker load -i voteapp_result/voteapp_result_image.tar
 
     - name: Login to registry
       uses: docker/login-action@v2
       with:
-        registry: ${{ env.acr_endpoint }}
+        registry: ${{ steps.createInfra.outputs.acr_endpoint }}
         username: ${{ secrets.ARM_CLIENT_ID }}
         password: ${{ secrets.ARM_CLIENT_SECRET }}
 
     - name: Load and push container images from tarballs
       run: |
 
-        docker tag voteapp/worker:local ${{ env.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
-        docker push ${{ env.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
+        docker tag voteapp/worker:local ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
+        docker push ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
 
-        docker tag voteapp/vote:local ${{ env.acr_endpoint }}/${{ env.VOTE_IMG }}:${{ env.VERSION }}
-        docker push ${{ env.acr_endpoint }}/${{ env.VOTE_IMG }}:${{ env.VERSION }}
+        # docker tag voteapp/worker:local ${{ env.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
+        # docker push ${{ env.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
 
-        docker tag voteapp/result:local ${{ env.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
-        docker push ${{ env.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
+        # docker tag voteapp/vote:local ${{ env.acr_endpoint }}/${{ env.VOTE_IMG }}:${{ env.VERSION }}
+        # docker push ${{ env.acr_endpoint }}/${{ env.VOTE_IMG }}:${{ env.VERSION }}
+
+        # docker tag voteapp/result:local ${{ env.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
+        # docker push ${{ env.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
 
     #   docker tag $(docker images -q voteapp_worker/voteapp_worker_image) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
 
+
+  Deploy-App:
+    runs-on: ubuntu-latest
+    needs: Push-Images-to-ACR
+    steps:
+    
     - name: Deploy Voting App
       run: |
 
