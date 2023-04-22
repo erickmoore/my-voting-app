@@ -113,12 +113,12 @@ jobs:
       run: |
 
         docker tag voteapp/worker:local ${{ env.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
-        docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
+        docker push ${{ env.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
 
         docker tag voteapp/vote:local ${{ env.acr_endpoint }}/${{ env.VOTE_IMG }}:${{ env.VERSION }}
         docker push ${{ env.acr_endpoint }}${{ env.VOTE_IMG }}:/${{ env.VERSION }}
 
-        docker tag voteapp/result:local ${{ senv.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
+        docker tag voteapp/result:local ${{ env.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
         docker push ${{ env.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
 
     # - name: Login to registry
