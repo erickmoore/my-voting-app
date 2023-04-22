@@ -101,10 +101,11 @@ jobs:
 
         pwd
         ls -la
-        
-        docker load -i voteapp_worker_image.tar
-        docker load -i voteapp_vote_image.tar
-        docker load -i voteapp_result_image.tar
+        ls -la voteapp_worker/
+
+        docker load -i voteapp_worker/voteapp_worker_image.tar
+        docker load -i voteapp_vote/voteapp_vote_image.tar
+        docker load -i voteapp_result/voteapp_result_image.tar
 
 
     - name: Azure Container Registry Login
