@@ -91,12 +91,18 @@ jobs:
         container: ${{ fromJson(needs.Build-Infrastructure.outputs.containers) }}
     steps:
 
+    - name: Get artifact name
+      run: |
+
+        ARTIFACT=$(echo "${{ matrix.container }}" | tr '/' '_')
+        echo "ARTIFACT=${ARTIFACT}" >> $GITHUB_ENV
+
     - name: Download workflow artifact
       uses: dawidd6/action-download-artifact@v2.27.0
       with:
         workflow: vote-app-security-scan.yaml
         workflow_conclusion: completed
-        name: ${{ matrix.container }}
+        name: ${{ env.ARTIFACT }}
 
     - name: Load Container Images
       run: |
@@ -135,7 +141,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: Push-Images-to-ACR
     steps:
-    
+
     - name: Deploy Voting App
       run: |
 
