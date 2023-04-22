@@ -97,9 +97,9 @@ jobs:
 
     - name: Load Container Images
       run: |
-        docker load -i voteapp_worker/voteapp_worker_image.tar
-        docker load -i voteapp_vote/voteapp_vote_image.tar
-        docker load -i voteapp_result/voteapp_result_image.tar
+        docker load -i voteapp_worker_image.tar
+        docker load -i voteapp_vote_image.tar
+        docker load -i voteapp_result_image.tar
 
 
     - name: Azure Container Registry Login
@@ -112,13 +112,13 @@ jobs:
     - name: Load and push container images from tarballs
       run: |
 
-        docker tag $(docker images -q voteapp_worker/voteapp_worker_image) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
+        docker tag $(docker images -q voteapp_worker_image) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
         docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.WORKER_IMG }}:${{ env.VERSION }}
 
-        docker tag $(docker images -q voteapp_vote/voteapp_vote_image) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.VOTE_IMG }}:${{ env.VERSION }}
+        docker tag $(docker images -q voteapp_vote_image) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.VOTE_IMG }}:${{ env.VERSION }}
         docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.VOTE_IMG }}:${{ env.VERSION }}
 
-        docker tag $(docker images -q voteapp_result/voteapp_result_image) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
+        docker tag $(docker images -q voteapp_result_image) ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
         docker push ${{ steps.createInfra.outputs.acr_endpoint }}/${{ env.RESULT_IMG }}:${{ env.VERSION }}
 
     # - name: Login to registry

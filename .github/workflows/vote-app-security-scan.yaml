@@ -81,4 +81,3 @@ jobs:
       uses: actions/upload-artifact@v3.1.2
       with:
         name: ${{ env.FILENAME }}
-        path: "${{ env.FILENAME }}_image.tar"
