@@ -64,6 +64,14 @@ jobs:
         echo "rg_name=$rg_name" >> $GITHUB_ENV
         echo "aks_name=$aks_name" >> $GITHUB_ENV
         
+
+        #// Debug:
+        echo "debug --------------"
+        echo "deployment status: $?"
+        echo "-------------------"
+        echo "resource group is $rg_name"
+        echo "aks cluster is $aks_name"
+
     - name: Install Sysdig Agents in AKS
       run: |
 
@@ -139,10 +147,14 @@ jobs:
 
   Deploy-App:
     runs-on: ubuntu-latest
-    needs: Push-Images-to-ACR
+    needs: 
+      - Build-Infrastructure
+      - Push-Images-to-ACR
+      
     env:
       rg_name: ${{ needs.Build-Infrastructure.outputs.rg_name }}
       aks_name: ${{ needs.Build-Infrastructure.outputs.aks_name }}
+
     steps:
 
     - name: Azure Login
