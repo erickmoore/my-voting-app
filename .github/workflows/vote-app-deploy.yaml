@@ -43,7 +43,7 @@ jobs:
         cluster-name: 'aks-eastus2-sysdig'
 
     - name: Deploy Azure Infrastructure
-      id: createInfra
+      id: createInfra 
       run: |
 
         # // Deploy templates
@@ -61,11 +61,9 @@ jobs:
         # // Export output variables
         echo "acr_resource_id=$acr_resource_id" >> $GITHUB_ENV
         echo "acr_endpoint=$acr_endpoint" >> $GITHUB_ENV
-        
-        outputs:
-          acr_resource_id: ${{ env.acr_resource_id }}
-          acr_endpoint: ${{ env.acr_endpoint }}
 
+        echo $acr_endpoint
+        
     - name: Install Sysdig Agents in AKS
       run: |
 
