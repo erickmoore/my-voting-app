@@ -40,7 +40,7 @@ jobs:
     - name: Azure Login
       uses: azure/login@v1
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        creds: ${{ secrets.AZURE_CREDENTIALS }}   
 
     - name: Deploy Azure Infrastructure
       id: createInfra 
@@ -63,9 +63,13 @@ jobs:
         echo "acr_endpoint=$acr_endpoint" >> $GITHUB_ENV
         echo "rg_name=$rg_name" >> $GITHUB_ENV
         echo "aks_name=$aks_name" >> $GITHUB_ENV
-
-
-
+        
+    - name: Set Azure AKS Context
+      uses: azure/aks-set-context@v3
+      with:
+        resource-group: ${{ env.rg_name }}
+        cluster-name: ${{ env.aks_name }}
+        
     - name: Install Sysdig Agents in AKS
       run: |
 
