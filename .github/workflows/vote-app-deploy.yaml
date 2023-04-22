@@ -43,7 +43,6 @@ jobs:
         cluster-name: 'aks-eastus2-sysdig'
 
     - name: Deploy Azure Infrastructure
-      if: ${{ github.event_name == 'nowowowow' }}
       id: createInfra 
       run: |
 
