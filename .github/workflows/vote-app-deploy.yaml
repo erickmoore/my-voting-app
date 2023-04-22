@@ -18,7 +18,8 @@ env:
   DEPLOY_NAME: sysdigvoteapp
   WORKER_IMG: voteapp/worker
   VOTE_IMG: voteapp/vote
-  RESULT_IMG: voteapp/result 
+  RESULT_IMG: voteapp/result
+  CONTAINERS: '[ "voteapp/worker", "voteapp/vote", "voteapp/result" ]'  
   VERSION: latest
   SYSDIG_API_URL: https://app.us4.sysdig.com/
   SYSDIG_LINUX_BINARY: "https://download.sysdig.com/scanning/bin/sysdig-cli-scanner/$(curl -L -s https://download.sysdig.com/scanning/sysdig-cli-scanner/latest_version.txt)/linux/amd64/sysdig-cli-scanner"
@@ -26,6 +27,8 @@ jobs:
 
   Build-Infrastructure:
     runs-on: ubuntu-latest
+    outputs:
+      containers: ${{ env.CONTAINERS }}
     steps:
 
     - name: Checkout
@@ -77,6 +80,15 @@ jobs:
         #   --set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=false \
         #   --set global.clusterConfig.name=aks-eastus2-sysdig \
         #   sysdig/sysdig-deploy
+
+  Push-Images-And-Deploy:
+    runs-on: ubuntu-latest
+    needs: Build-Infrastructure
+    strategy:
+      fail-fast: true
+      matrix:
+        container: ${{ fromJson(needs.Build-Infrastructure.outputs.containers) }}
+    steps:
 
     - name: Download workflow artifact
       uses: dawidd6/action-download-artifact@v2.27.0
