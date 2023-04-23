@@ -32,6 +32,8 @@ jobs:
       acr_endpoint: ${{ env.acr_endpoint }}
       rg_name: ${{ env.rg_name }}
       aks_name: ${{ env.aks_name }}
+    env:
+      logId: ${{ secrets.LOG_WORKSPACE_ID }}
     steps:
 
     - name: Checkout
@@ -47,7 +49,7 @@ jobs:
       run: |
 
         # // Deploy templates
-        az deployment sub create --name ${{ env.DEPLOY_NAME }} --location eastus2 --template-file templates/bicep/main.bicep --parameters logId=${{ secrets.LOG_WORKSPACE_ID }}
+        az deployment sub create --name ${{ env.DEPLOY_NAME }} --location eastus2 --template-file templates/bicep/main.bicep --parameters logId=''
         
         # // Get names from deployment output
         rg_name=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.rgName.value' --output tsv)
