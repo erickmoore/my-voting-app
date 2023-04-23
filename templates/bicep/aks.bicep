@@ -43,9 +43,9 @@ resource aks 'Microsoft.ContainerService/managedClusters@2023-02-01' = {
     }
     addonProfiles: {
       omsagent: {
-        enabled: logWorkspaceId == '' ? false : true
+        enabled:  (!empty(logWorkspaceId) ? true : false)
         config: {
-          logAnalyticsWorkspaceResourceID: logWorkspaceId
+          logAnalyticsWorkspaceResourceID:  ((!empty(logWorkspaceId)) ? reference(logWorkspaceId, '2021-03-01').id : null)
         }
       }
     }
