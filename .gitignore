@@ -9,3 +9,4 @@ aks.private
 terraform/.terraform
 terraform/tfplan
 terraform/.terraform.lock.hcl
+sysdig-deploy

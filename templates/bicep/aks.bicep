@@ -9,7 +9,7 @@ param publicKey string
 ])
 param vmSize    string = 'Standard_B2ms'
 
-@maxValue(3)
+@maxValue(5)
 param nodeCount int = 3
 
 resource aks 'Microsoft.ContainerService/managedClusters@2023-02-01' = {
