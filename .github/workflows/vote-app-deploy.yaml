@@ -79,7 +79,7 @@ jobs:
         helm repo update
         helm upgrade --install sysdig-agent --namespace sysdig-agent \
           --create-namespace \
-          --set global.sysdig.accessKey=${{ secrets.SYSDIG_SECURE_TOKEN }} \
+          --set global.sysdig.accessKey=${{ secrets.SYSDIG_AGENT_TOKEN }} \
           --set global.sysdig.region=us4 \
           --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
           --set global.kspm.deploy=true \
