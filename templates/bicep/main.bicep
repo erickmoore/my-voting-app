@@ -97,3 +97,4 @@ output acrEndpoint  string = acr.outputs.acrEndpoint
 output acrId        string = acr.outputs.acrId
 output aksName      string = aksNaming.outputs.resourceName
 output rgName       string = rg.name
+
