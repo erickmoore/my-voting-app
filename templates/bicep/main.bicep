@@ -7,11 +7,12 @@ param location  string = 'eastus2'
 param purpose   string = 'sysdig'
 param cidr      string = '10.175.0.0/20'
 param stgName   string = 'sysdigtftest'
+param logId     string
 
 // Variables
 //
-var rgName        = 'rg-${location}-${purpose}'
-var publicKeyData = loadTextContent('../../aks.pub')
+var rgName          = 'rg-${location}-${purpose}'
+var publicKeyData   = loadTextContent('../../aks.pub')
 
 // Create names for resources
 //
@@ -66,10 +67,11 @@ module aks 'aks.bicep' = {
   scope: rg
   name: 'deploy-aks'
   params: {
-    location:   rg.location
-    name:       aksNaming.outputs.resourceName
-    publicKey:  publicKeyData
-    subnetId:   aksVNet.outputs.subnetId
+    location:       rg.location
+    name:           aksNaming.outputs.resourceName
+    publicKey:      publicKeyData
+    subnetId:       aksVNet.outputs.subnetId
+    logWorkspaceId: logId
   }
 }
 

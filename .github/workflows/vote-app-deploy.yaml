@@ -47,7 +47,7 @@ jobs:
       run: |
 
         # // Deploy templates
-        az deployment sub create --name ${{ env.DEPLOY_NAME }} --location eastus2 --template-file templates/bicep/main.bicep
+        az deployment sub create --name ${{ env.DEPLOY_NAME }} --location eastus2 --template-file templates/bicep/main.bicep --parameters logId=${{ secrets.LOG_WORKSPACE_ID }}
         
         # // Get names from deployment output
         rg_name=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.rgName.value' --output tsv)
