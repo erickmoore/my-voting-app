@@ -7,7 +7,7 @@ param location  string = 'eastus2'
 param purpose   string = 'sysdig'
 param cidr      string = '10.175.0.0/20'
 param stgName   string = 'sysdigtftest'
-param logId     string
+param logId     string = ''
 
 // Variables
 //
