@@ -22,6 +22,7 @@ env:
   CONTAINERS: '[ "voteapp/worker", "voteapp/vote", "voteapp/result" ]'  
   VERSION: latest
   SYSDIG_API_URL: https://app.us4.sysdig.com/
+  SYSDIG_K8S_AGENT_URL: https://download.sysdig.com/stable/install-agent-kubernetes
   SYSDIG_LINUX_BINARY: "https://download.sysdig.com/scanning/bin/sysdig-cli-scanner/$(curl -L -s https://download.sysdig.com/scanning/sysdig-cli-scanner/latest_version.txt)/linux/amd64/sysdig-cli-scanner"
 jobs:
 
@@ -86,6 +87,12 @@ jobs:
           --set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=true \
           --set global.clusterConfig.name=${{ env.aks_name }} \
           sysdig/sysdig-deploy
+
+    - name: Instrument AKS
+      run: |
+
+        curl -s ${{ env.SYSDIG_K8S_AGENT_URL }} | sudo bash -s -- --access_key ${{ secrets.SYSDIG_AGENT_TOKEN }} \
+         --collector ingest.us4.sysdig.com --collector_port 6443 --cluster_name ${{ env.aks_name }} --nodeanalyzer --api_endpoint ${{ env.SYSDIG_API_URL }}
 
 
   Push-Images-to-ACR:
