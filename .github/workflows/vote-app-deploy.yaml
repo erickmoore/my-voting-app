@@ -7,6 +7,10 @@ on:
     types:
       - opened
       - synchronize
+    paths-ignore:
+      - "*.md"
+      - ".github/**"
+      - "scripts/**"      
 
   workflow_dispatch:
 
