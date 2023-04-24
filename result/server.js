@@ -10,7 +10,10 @@ var express = require('express'),
     server = require('http').Server(app),
     io = require('socket.io')(server);
 
-io.set('transports', ['polling']);
+    // Adding new IO 
+// io.set('transports', ['polling']);
+io.engine.transports = ['polling'];
+
 
 var port = process.env.PORT || 4000;
 
