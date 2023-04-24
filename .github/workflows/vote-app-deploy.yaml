@@ -16,9 +16,6 @@ permissions:
 
 env:
   DEPLOY_NAME: sysdigvoteapp
-  WORKER_IMG: voteapp/worker
-  VOTE_IMG: voteapp/vote
-  RESULT_IMG: voteapp/result
   CONTAINERS: '[ "voteapp/worker", "voteapp/vote", "voteapp/result" ]'  
   VERSION: latest
   SYSDIG_API_URL: https://app.us4.sysdig.com/
@@ -88,12 +85,12 @@ jobs:
           --set global.clusterConfig.name=${{ env.aks_name }} \
           sysdig/sysdig-deploy
 
-    - name: Instrument AKS
-      continue-on-error: true
-      run: |
+    # - name: Instrument AKS
+    #   continue-on-error: true
+    #   run: |
 
-        curl -s ${{ env.SYSDIG_K8S_AGENT_URL }} | sudo bash -s -- --access_key ${{ secrets.SYSDIG_AGENT_TOKEN }} \
-         --collector ingest.us4.sysdig.com --collector_port 6443 --cluster_name ${{ env.aks_name }} --nodeanalyzer --api_endpoint ${{ env.SYSDIG_API_URL }}
+    #     curl -s ${{ env.SYSDIG_K8S_AGENT_URL }} | sudo bash -s -- --access_key ${{ secrets.SYSDIG_AGENT_TOKEN }} \
+    #      --collector ingest.us4.sysdig.com --collector_port 6443 --cluster_name ${{ env.aks_name }} --nodeanalyzer --api_endpoint ${{ env.SYSDIG_API_URL }}
 
 
   Push-Images-to-ACR:

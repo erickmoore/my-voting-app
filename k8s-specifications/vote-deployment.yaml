@@ -17,6 +17,10 @@ spec:
       containers:
       - image: acreastus2sysdig.azurecr.io/voteapp/vote:latest
         name: vote
+        resources:
+          limits:
+            cpu: 250m
+            memory: 256mi        
         ports:
         - containerPort: 80
           name: vote
