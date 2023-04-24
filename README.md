@@ -1,3 +1,6 @@
+[![Create Infrastructure and Deploy Vote App](https://github.com/erickmoore/my-voting-app/actions/workflows/vote-app-deploy.yaml/badge.svg)](https://github.com/erickmoore/my-voting-app/actions/workflows/vote-app-deploy.yaml)
+[![Vote App Security Scan](https://github.com/erickmoore/my-voting-app/actions/workflows/vote-app-security-scan.yaml/badge.svg)](https://github.com/erickmoore/my-voting-app/actions/workflows/vote-app-security-scan.yaml)
+
 # Example Voting App
 
 A simple distributed application running across multiple Docker containers.
