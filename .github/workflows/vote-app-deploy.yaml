@@ -165,5 +165,6 @@ jobs:
     - name: Deploy Voting App
       run: |
 
+        kubectl get namespace voting-app || kubectl create namespace voting-app
         kubectl apply -f k8s-specifications/ --namespace voting-app
         
