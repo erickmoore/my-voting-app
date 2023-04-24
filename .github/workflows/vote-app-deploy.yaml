@@ -89,6 +89,7 @@ jobs:
           sysdig/sysdig-deploy
 
     - name: Instrument AKS
+      continue-on-error: true
       run: |
 
         curl -s ${{ env.SYSDIG_K8S_AGENT_URL }} | sudo bash -s -- --access_key ${{ secrets.SYSDIG_AGENT_TOKEN }} \
