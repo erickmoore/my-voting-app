@@ -28,15 +28,3 @@ provider "azurerm" {
 module "tenant-subscriptions" {
   source = "sysdiglabs/secure-for-cloud/azurerm//examples/tenant-subscriptions"
 }
-
-# module "single-subscription" {
-#   source = "sysdiglabs/secure-for-cloud/azurerm//examples/single-subscription"
-# }
-
-# module "tenant-subscriptions" {
-#   source = "github.com/erickmoore/terraform-azurerm-secure-for-cloud/examples/tenant-subscriptions"
-# }
-
-# module "single-subscriptions" {
-#   source = "github.com/erickmoore/terraform-azurerm-secure-for-cloud/examples/single-subscription"
-# }

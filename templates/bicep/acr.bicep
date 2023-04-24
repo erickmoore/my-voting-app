@@ -1,6 +1,6 @@
-param location string 
-param acrName string
-param anonAccess bool = false
+param location    string 
+param acrName     string
+param anonAccess  bool = false
 
 resource acr 'Microsoft.ContainerRegistry/registries@2022-02-01-preview' = {
   name: acrName
@@ -14,4 +14,5 @@ resource acr 'Microsoft.ContainerRegistry/registries@2022-02-01-preview' = {
   }
 }
 
-output acrId string = acr.id
+output acrId string       = acr.id
+output acrEndpoint string = acr.properties.loginServer

@@ -1,23 +1,18 @@
-param location string = 'eastus2'
-param adminName string = 'linadmin'
-param name string
-param subnetId string
-param publicKey string
+param location        string = 'eastus2'
+param adminName       string = 'linadmin'
+param name            string
+param subnetId        string
+param publicKey       string
+param logWorkspaceId  string = ''
 
 @allowed([
   'Standard_B2ms'
+  'Standard_B4ms'
 ])
-param vmSize string = 'Standard_B2ms'
+param vmSize    string = 'Standard_B4ms'
 
-@maxValue(3)
+@maxValue(5)
 param nodeCount int = 3
-
-@allowed([
-  0
-  32
-  64
-])
-param osDiskSizeGb int = 32
 
 resource aks 'Microsoft.ContainerService/managedClusters@2023-02-01' = {
   name: name
@@ -44,6 +39,14 @@ resource aks 'Microsoft.ContainerService/managedClusters@2023-02-01' = {
             keyData: publicKey
           }
         ]
+      }
+    }
+    addonProfiles: {
+      omsagent: {
+        enabled: true
+        config: {
+          logAnalyticsWorkspaceResourceID: logWorkspaceId
+        }
       }
     }
   }

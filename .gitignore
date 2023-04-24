@@ -9,3 +9,7 @@ aks.private
 terraform/.terraform
 terraform/tfplan
 terraform/.terraform.lock.hcl
+sysdig-deploy
+azureResources.json
+result/.DS_Store
+.DS_Store

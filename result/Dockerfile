@@ -1,4 +1,4 @@
-FROM node:18-slim
+FROM node:20-slim
 
 # add curl for healthcheck
 RUN apt-get update \
@@ -10,14 +10,18 @@ RUN apt-get update \
 WORKDIR /app
 
 # have nodemon available for local dev use (file watching)
-RUN npm install -g nodemon
+# RUN npm install -g nodemon
 
 COPY package*.json ./
 
-RUN npm ci \
- && npm cache clean --force \
- && mv /app/node_modules /node_modules
+# Delete the package-lock.json file
+RUN rm -f package-lock.json
 
+RUN npm install \
+ && mv /app/node_modules /node_modules \
+ && npm install debug@4.3.1 \
+ && npm cache clean --force
+ 
 COPY . .
 
 ENV PORT 80

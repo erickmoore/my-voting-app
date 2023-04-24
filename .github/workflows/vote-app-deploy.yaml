@@ -1,0 +1,170 @@
+name: Create Infrastructure and Deploy Vote App
+
+on:    
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  DEPLOY_NAME: sysdigvoteapp
+  CONTAINERS: '[ "voteapp/worker", "voteapp/vote", "voteapp/result" ]'  
+  VERSION: latest
+  SYSDIG_API_URL: https://app.us4.sysdig.com/
+  SYSDIG_K8S_AGENT_URL: https://download.sysdig.com/stable/install-agent-kubernetes
+  SYSDIG_LINUX_BINARY: "https://download.sysdig.com/scanning/bin/sysdig-cli-scanner/$(curl -L -s https://download.sysdig.com/scanning/sysdig-cli-scanner/latest_version.txt)/linux/amd64/sysdig-cli-scanner"
+jobs:
+
+  Build-Infrastructure:
+    runs-on: ubuntu-latest
+    outputs:
+      containers: ${{ env.CONTAINERS }}
+      acr_endpoint: ${{ env.acr_endpoint }}
+      rg_name: ${{ env.rg_name }}
+      aks_name: ${{ env.aks_name }}
+    env:
+      logId: ${{ secrets.LOG_WORKSPACE_ID }}
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}   
+
+    - name: Deploy Azure Infrastructure
+      id: createInfra 
+      run: |
+
+        # // Deploy templates
+        az deployment sub create --name ${{ env.DEPLOY_NAME }} --location eastus2 --template-file templates/bicep/main.bicep --parameters logId=${{ env.logId }}
+        
+        # // Get names from deployment output
+        rg_name=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.rgName.value' --output tsv)
+        aks_name=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.aksName.value' --output tsv)
+        acr_resource_id=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.acrId.value' --output tsv)
+        acr_endpoint=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.acrEndpoint.value' --output tsv)
+
+        # // Attach using acr-resource-id
+        az aks update -n $aks_name -g $rg_name --attach-acr $acr_resource_id
+
+        # // Export output variables
+        echo "acr_resource_id=$acr_resource_id" >> $GITHUB_ENV
+        echo "acr_endpoint=$acr_endpoint" >> $GITHUB_ENV
+        echo "rg_name=$rg_name" >> $GITHUB_ENV
+        echo "aks_name=$aks_name" >> $GITHUB_ENV
+        
+    - name: Set Azure AKS Context
+      uses: azure/aks-set-context@v3
+      with:
+        resource-group: ${{ env.rg_name }}
+        cluster-name: ${{ env.aks_name }}
+        
+    - name: Install Sysdig Agents in AKS
+      run: |
+
+        helm repo add sysdig https://charts.sysdig.com
+        helm repo update
+        helm upgrade --install sysdig-agent --namespace sysdig-agent \
+          --create-namespace \
+          --set global.sysdig.accessKey=${{ secrets.SYSDIG_AGENT_TOKEN }} \
+          --set global.sysdig.region=us4 \
+          --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
+          --set global.kspm.deploy=true \
+          --set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=true \
+          --set global.clusterConfig.name=${{ env.aks_name }} \
+          sysdig/sysdig-deploy
+
+    # - name: Instrument AKS
+    #   continue-on-error: true
+    #   run: |
+
+    #     curl -s ${{ env.SYSDIG_K8S_AGENT_URL }} | sudo bash -s -- --access_key ${{ secrets.SYSDIG_AGENT_TOKEN }} \
+    #      --collector ingest.us4.sysdig.com --collector_port 6443 --cluster_name ${{ env.aks_name }} --nodeanalyzer --api_endpoint ${{ env.SYSDIG_API_URL }}
+
+
+  Push-Images-to-ACR:
+    runs-on: ubuntu-latest
+    needs: Build-Infrastructure
+    env:
+      acr_endpoint: ${{ needs.Build-Infrastructure.outputs.acr_endpoint }}
+    strategy:
+      fail-fast: true
+      matrix:
+        container: ${{ fromJson(needs.Build-Infrastructure.outputs.containers) }}
+    steps:
+
+    - name: Get artifact name
+      run: |
+
+        ARTIFACT=$(echo "${{ matrix.container }}" | tr '/' '_')
+        echo "ARTIFACT=${ARTIFACT}" >> $GITHUB_ENV
+
+    - name: Download workflow artifact
+      uses: dawidd6/action-download-artifact@v2.27.0
+      with:
+        workflow: vote-app-security-scan.yaml
+        workflow_conclusion: completed
+        name: ${{ env.ARTIFACT }}
+
+    - name: Load Container Images
+      run: |
+
+        docker load -i ${{ env.ARTIFACT }}_image.tar
+        
+    - name: Login to registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.acr_endpoint }}
+        username: ${{ secrets.ARM_CLIENT_ID }}
+        password: ${{ secrets.ARM_CLIENT_SECRET }}
+
+    - name: Load and push container images from tarballs
+      run: |
+
+        docker tag ${{ matrix.container }}:local ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
+        docker push ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
+
+
+  Deploy-App:
+    runs-on: ubuntu-latest
+    needs: 
+      - Build-Infrastructure
+      - Push-Images-to-ACR
+      
+    env:
+      rg_name: ${{ needs.Build-Infrastructure.outputs.rg_name }}
+      aks_name: ${{ needs.Build-Infrastructure.outputs.aks_name }}
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3    
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Set Azure AKS Context
+      uses: azure/aks-set-context@v3
+      with:
+        resource-group: ${{ env.rg_name }}
+        cluster-name: ${{ env.aks_name }}
+
+    - name: Deploy Voting App
+      run: |
+
+        kubectl get namespace voting-app || kubectl create namespace voting-app
+        kubectl apply -f k8s-specifications/ --namespace voting-app
+        
