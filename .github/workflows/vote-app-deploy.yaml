@@ -161,7 +161,7 @@ jobs:
 
     - name: Build and Push Images to ACR
       run: |
-          az acr build --registry ${{ secrets.ACR_ENDPOINT }} --image voteapp/${{ matrix.container }}:${{ github.sha }} ./${{ matrix.container }}
+          az acr build --registry ${{ secrets.ACR_ENDPOINT }} --image voteapp/${{ matrix.container }}:${{ github.sha }} ${{ matrix.container }}/Dockerfile
   
     # - name: Get artifact name
     #   run: |
