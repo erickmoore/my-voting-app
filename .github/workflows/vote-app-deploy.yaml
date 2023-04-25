@@ -159,8 +159,8 @@ jobs:
         username: ${{ secrets.ACR_USERNAME }}
         password: ${{ secrets.ACR_PASSWORD }}
     - run: |
-        docker images
-        echo ${{ secrets.ACR_ENDPOINT }}/${{ matrix.container }}:${{ github.sha }}
+        
+        docker tag ${{ matrix.container }}:${{ github.sha }} ${{ secrets.ACR_ENDPOINT }}/${{ matrix.container }}:${{ github.sha }}
         docker push ${{ secrets.ACR_ENDPOINT }}/${{ matrix.container }}:${{ github.sha }}
   
     # - name: Get artifact name
