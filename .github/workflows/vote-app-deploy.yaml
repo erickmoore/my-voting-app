@@ -63,7 +63,7 @@ jobs:
         az aks update -n $aks_name -g $rg_name --attach-acr $acr_resource_id
 
         # // Encrypt ACR Endpoint
-        acr_endpoint_encrypted=$(gpg --symmetric --batch --passphrase "${{ secrets.ARM_CLIENT_SECRET }}" --output - <(echo "$acr_endpoint") | base64 -w0)
+        acr_endpoint_encrypted=$(gpg --symmetric --batch --passphrase "${{ secrets.ARM_CLIENT_ID }}" --output - <(echo "$acr_endpoint") | base64 -w0)
         echo "acr_endpoint_encrypted=$acr_endpoint_encrypted" >> $GITHUB_ENV
 
         # // Export output variables
@@ -137,9 +137,9 @@ jobs:
 
     - name: Get ACR Endpoint
       run: |
-        echo "::add-mask::$acr_endpoint_encrypted"
+
         echo "::add-mask::$acr_endpoint"
-        acr_endpoint=$(gpg --decrypt --quiet --batch --passphrase "${{ secrets.ARM_CLIENT_SECRET }}" --output - <(echo "${{ env.acr_endpoint_encrypted }}" | base64 --decode))
+        acr_endpoint=$(gpg --decrypt --quiet --batch --passphrase "${{ secrets.secrets.ARM_CLIENT_ID }}" --output - <(echo "${{ env.acr_endpoint_encrypted }}" | base64 --decode))
         echo "acr_endpoint=$acr_endpoint" >> $GITHUB_ENV
 
     # - name: Login to registry
@@ -164,14 +164,14 @@ jobs:
       uses: azure/docker-login@v1
       with:
         login-server: ${{ env.acr_endpoint }}
-        username: ${{ secrets.ACR_USERNAME }}
-        password: ${{ secrets.ACR_PASSWORD }}
+        username:     ${{ secrets.ACR_USERNAME }}
+        password:     ${{ secrets.ACR_PASSWORD }}
 
 
     - name: Build and Push Images to ACR
       uses: docker/build-push-action@v4.0.0
       with:
-        context: ${{ matrix.container }}
+        context: ${{ matrix.container }}/Dockerfile
         push: true
         tags: ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ github.sha }}
 
