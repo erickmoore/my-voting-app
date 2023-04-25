@@ -20,7 +20,7 @@ permissions:
 
 env:
   DEPLOY_NAME: sysdigvoteapp
-  CONTAINERS: '[ "worker", "vote", "result" ]'  
+  CONTAINERS: '[ "voteapp/worker", "voteapp/vote", "voteapp/result" ]'
   VERSION: latest
   SYSDIG_API_URL: https://app.us4.sysdig.com/
   SYSDIG_K8S_AGENT_URL: https://download.sysdig.com/stable/install-agent-kubernetes
@@ -123,17 +123,18 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Show Path
-      run: |
-        pwd
-        ls -la
-        echo ${{ matrix.container }}/Dockerfile
-
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
         
+
+    - name: Build Local Container
+      run: |
+
+        FOLDER_NAME=$(echo "${{ matrix.container }}" | cut -d '/' -f 2)
+        docker buildx build --no-cache $FOLDER_NAME/ -t ${{ matrix.container }}:${{ github.sha }} --platform linux/amd64    
+
     # - name: Login to registry
     #   uses: docker/login-action@v2
     #   with:
@@ -152,16 +153,14 @@ jobs:
     #     service_principal_password: ${{ secrets.ACR_WORFLOW_PASSWORD }}
     #     tag:                        ${{ github.sha }}
 
-    - name: 'Login to ACR'
-      uses: azure/docker-login@v1
+    - name: Push Images to ACR
+      uses: azure/docker-login@v2.1.0
       with:
         login-server: ${{ secrets.ACR_ENDPOINT }}
         username:     ${{ secrets.ACR_USERNAME }}
         password:     ${{ secrets.ACR_PASSWORD }}
-
-    - name: Build and Push Images to ACR
-      run: |
-          az acr build --registry ${{ secrets.ACR_ENDPOINT }} --image voteapp/${{ matrix.container }}:${{ github.sha }} ${{ matrix.container }}/
+    - run: |
+        docker push ${{ secrets.ACR_ENDPOINT }}/${{ matrix.container }}:${{ github.sha }}
   
     # - name: Get artifact name
     #   run: |
