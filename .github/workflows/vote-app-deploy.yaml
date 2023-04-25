@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       containers: ${{ env.CONTAINERS }}
-      acr_endpoint: ${{ env.acr_endpoint }}
+      acr_endpoint: "${{ env.acr_endpoint }}"
       rg_name: ${{ env.rg_name }}
       aks_name: ${{ env.aks_name }}
     env:
