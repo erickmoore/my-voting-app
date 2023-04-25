@@ -138,8 +138,8 @@ jobs:
     - name: Get ACR Endpoint
       run: |
 
-        echo "::add-mask::$acr_endpoint"
-        acr_endpoint=$(gpg --decrypt --quiet --batch --passphrase "${{ secrets.secrets.ARM_CLIENT_ID }}" --output - <(echo "${{ env.acr_endpoint_encrypted }}" | base64 --decode))
+        #echo "::add-mask::$acr_endpoint"
+        acr_endpoint=$(gpg --decrypt --quiet --batch --passphrase "${{ secrets.ARM_CLIENT_ID }}" --output - <(echo "${{ env.acr_endpoint_encrypted }}" | base64 --decode))
         echo "acr_endpoint=$acr_endpoint" >> $GITHUB_ENV
 
     # - name: Login to registry
