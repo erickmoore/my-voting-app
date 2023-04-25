@@ -64,10 +64,8 @@ jobs:
 
         # // Add mask for acr endpoint since GH thinks it is a secret :/
         
-        echo "::add-mask::$acr_endpoint"
-        acr_endpoint_encrypted=$(gpg --symmetric --batch --passphrase "secret" --output - <(echo "$acr_endpoint") | base64 -w0)
-        echo "::set-output name=acr_endpoint_encrypted::$acr_endpoint_encrypted"
-
+        acr_endpoint_encrypted=$(gpg --symmetric --batch --passphrase "${{ secrets.ARM_CLIENT_SECRET }}" --output - <(echo "$acr_endpoint") | base64 -w0)
+        echo "acr_endpoint_encrypted=$acr_endpoint_encrypted" >> $GITHUB_ENV
 
         # // Export output variables
         echo "acr_resource_id=$acr_resource_id" >> $GITHUB_ENV
@@ -132,7 +130,7 @@ jobs:
 
     - name: Get ACR Endpoint
       run: |
-        acr_endpoint=$(gpg --decrypt --quiet --batch --passphrase "secret" --output - <(echo "${{ needs.Build-Infrastructure.outputs.acr_endpoint_encrypted }}" | base64 --decode))
+        acr_endpoint=$(gpg --decrypt --quiet --batch --passphrase "${{ secrets.ARM_CLIENT_SECRET }}" --output - <(echo "${{ needs.Build-Infrastructure.outputs.acr_endpoint_encrypted }}" | base64 --decode))
         echo "::add-mask::$acr_endpoint"
         echo "acr_endpoint=$acr_endpoint" >> $GITHUB_ENV
 
