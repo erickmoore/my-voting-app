@@ -153,12 +153,12 @@ jobs:
     #     service_principal_password: ${{ secrets.ACR_WORFLOW_PASSWORD }}
     #     tag:                        ${{ github.sha }}
 
-    - name: Push Images to ACR
-      uses: docker/docker-login@v2.1.0
+    - name: Login and Push to ACR
+      uses: docker/login-action@v2
       with:
-        login-server: ${{ secrets.ACR_ENDPOINT }}
-        username:     ${{ secrets.ACR_USERNAME }}
-        password:     ${{ secrets.ACR_PASSWORD }}
+        registry: ${{ secrets.ACR_ENDPOINT }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
     - run: |
         docker push ${{ secrets.ACR_ENDPOINT }}/${{ matrix.container }}:${{ github.sha }}
   
