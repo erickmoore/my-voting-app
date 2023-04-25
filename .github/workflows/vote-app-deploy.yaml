@@ -151,7 +151,7 @@ jobs:
         tenant:                     ${{ secrets.ARM_TENANT_ID }}
         service_principal:          ${{ secrets.ARM_CLIENT_ID }}
         service_principal_password: ${{ secrets.ARM_CLIENT_SECRET }}
-        tags:                       ${{ github.sha }}
+        tag:                        ${{ github.sha }}
 
 
     # - name: Build and Push Images to ACR
