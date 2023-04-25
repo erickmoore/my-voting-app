@@ -20,7 +20,7 @@ permissions:
 
 env:
   DEPLOY_NAME: sysdigvoteapp
-  CONTAINERS: '[ "voteapp/worker", "voteapp/vote", "voteapp/result" ]'  
+  CONTAINERS: '[ "worker", "vote", "result" ]'  
   VERSION: latest
   SYSDIG_API_URL: https://app.us4.sysdig.com/
   SYSDIG_K8S_AGENT_URL: https://download.sysdig.com/stable/install-agent-kubernetes
@@ -173,7 +173,7 @@ jobs:
       with:
         context: ${{ matrix.container }}/Dockerfile
         push: true
-        tags: ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ github.sha }}
+        tags: ${{ env.acr_endpoint }}/voteapp/${{ matrix.container }}:${{ github.sha }}
 
 
     # - name: Get artifact name
