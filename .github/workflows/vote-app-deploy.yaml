@@ -186,4 +186,4 @@ jobs:
 
         kubectl get namespace voting-app || kubectl create namespace voting-app
         kubectl apply -f k8s-specifications/ --namespace voting-app
-        
+        kubectl label namespace voting-app name=voting-app external=true environment=prod --overwrite
