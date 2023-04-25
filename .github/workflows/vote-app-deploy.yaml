@@ -31,7 +31,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       containers: ${{ env.CONTAINERS }}
-      acr_endpoint_encrypted: "${{ env.acr_endpoint_encrypted }}"
       rg_name: ${{ env.rg_name }}
       aks_name: ${{ env.aks_name }}
     env:
@@ -61,10 +60,6 @@ jobs:
 
         # // Attach using acr-resource-id
         az aks update -n $aks_name -g $rg_name --attach-acr $acr_resource_id
-
-        # // Encrypt ACR Endpoint
-        acr_endpoint_encrypted=$(gpg --symmetric --batch --passphrase "${{ secrets.ARM_CLIENT_ID }}" --output - <(echo "$acr_endpoint") | base64 -w0)
-        echo "acr_endpoint_encrypted=$acr_endpoint_encrypted" >> $GITHUB_ENV
 
         # // Export output variables
         echo "acr_resource_id=$acr_resource_id" >> $GITHUB_ENV
@@ -119,8 +114,6 @@ jobs:
   Push-Images-to-ACR:
     runs-on: ubuntu-latest
     needs: Build-Infrastructure
-    env:
-      acr_endpoint_encrypted: ${{ needs.Build-Infrastructure.outputs.acr_endpoint_encrypted }}
     strategy:
       fail-fast: true
       matrix:
@@ -134,13 +127,6 @@ jobs:
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-    - name: Get ACR Endpoint
-      run: |
-
-        #echo "::add-mask::$acr_endpoint"
-        acr_endpoint=$(gpg --decrypt --quiet --batch --passphrase "${{ secrets.ARM_CLIENT_ID }}" --output - <(echo "${{ env.acr_endpoint_encrypted }}" | base64 --decode))
-        echo "acr_endpoint=$acr_endpoint" >> $GITHUB_ENV
 
     # - name: Login to registry
     #   uses: docker/login-action@v2
@@ -163,7 +149,7 @@ jobs:
     - name: 'Login to ACR'
       uses: azure/docker-login@v1
       with:
-        login-server: ${{ env.acr_endpoint }}
+        login-server: ${{ secrets.ACR_ENDPOINT }}
         username:     ${{ secrets.ACR_USERNAME }}
         password:     ${{ secrets.ACR_PASSWORD }}
 
@@ -173,7 +159,7 @@ jobs:
       with:
         context: ${{ matrix.container }}/Dockerfile
         push: true
-        tags: ${{ env.acr_endpoint }}/voteapp/${{ matrix.container }}:${{ github.sha }}
+        tags: ${{ secrets.ACR_ENDPOINT }}/voteapp/${{ matrix.container }}:${{ github.sha }}
 
 
     # - name: Get artifact name
