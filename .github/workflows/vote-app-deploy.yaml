@@ -126,24 +126,6 @@ jobs:
         container: ${{ fromJson(needs.Build-Infrastructure.outputs.containers) }}
     steps:
 
-    - name: Get artifact name
-      run: |
-
-        ARTIFACT=$(echo "${{ matrix.container }}" | tr '/' '_')
-        echo "ARTIFACT=${ARTIFACT}" >> $GITHUB_ENV
-
-    - name: Download workflow artifact
-      uses: dawidd6/action-download-artifact@v2.27.0
-      with:
-        workflow: vote-app-security-scan.yaml
-        workflow_conclusion: completed
-        name: ${{ env.ARTIFACT }}
-
-    - name: Load Container Images
-      run: |
-
-        docker load -i ${{ env.ARTIFACT }}_image.tar
-        
     - name: Login to registry
       uses: docker/login-action@v2
       with:
@@ -151,11 +133,41 @@ jobs:
         username: ${{ secrets.ARM_CLIENT_ID }}
         password: ${{ secrets.ARM_CLIENT_SECRET }}
 
-    - name: Load and push container images from tarballs
-      run: |
+    - name: Build and Push Images to ACR
+      uses: docker/build-push-action@v4.0.0
+      with:
+        context: ${{ matrix.container }}
+        build-args: |
+          version=${{ github.sha }}
+        push: true
+        tags: ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
 
-        docker tag ${{ matrix.container }}:local ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
-        docker push ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
+
+    # - name: Get artifact name
+    #   run: |
+
+    #     ARTIFACT=$(echo "${{ matrix.container }}" | tr '/' '_')
+    #     echo "ARTIFACT=${ARTIFACT}" >> $GITHUB_ENV
+
+    # - name: Download workflow artifact
+    #   uses: dawidd6/action-download-artifact@v2.27.0
+    #   with:
+    #     workflow: vote-app-security-scan.yaml
+    #     workflow_conclusion: completed
+    #     name: ${{ env.ARTIFACT }}
+
+    # - name: Load Container Images
+    #   run: |
+
+    #     docker load -i ${{ env.ARTIFACT }}_image.tar
+        
+
+
+    # - name: Load and push container images from tarballs
+    #   run: |
+
+    #     docker tag ${{ matrix.container }}:local ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
+    #     docker push ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
 
 
   Deploy-App:
@@ -187,6 +199,16 @@ jobs:
     - name: Deploy Voting App
       run: |
 
+        sudo apt-get update
+        sudo apt-get install -y gettext-base
+
+        export IMAGE_TAG=${{ github.sha }}
+
+        mkdir k8s-temp
+        for file in k8s-specifications/*.yaml; do
+          envsubst < "$file" > "k8s-temp/$(basename "$file")"
+        done
+
         kubectl get namespace voting-app || kubectl create namespace voting-app
-        kubectl apply -f k8s-specifications/ --namespace voting-app
+        kubectl apply -f k8s-temp/ --namespace voting-app
         kubectl label namespace voting-app name=voting-app external=true environment=prod --overwrite

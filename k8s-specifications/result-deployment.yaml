@@ -15,7 +15,7 @@ spec:
         app: result
     spec:
       containers:
-      - image: acreastus2sysdig.azurecr.io/voteapp/result:latest
+      - image: acreastus2sysdig.azurecr.io/voteapp/result:${IMAGE_TAG}
         name: result
         resources:
           limits:
