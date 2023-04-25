@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       containers: ${{ env.CONTAINERS }}
-      acr_endpoint: "${{ env.acr_endpoint }}"
+      acr_endpoint_encrypted: "${{ env.acr_endpoint_encrypted }}"
       rg_name: ${{ env.rg_name }}
       aks_name: ${{ env.aks_name }}
     env:
@@ -63,7 +63,11 @@ jobs:
         az aks update -n $aks_name -g $rg_name --attach-acr $acr_resource_id
 
         # // Add mask for acr endpoint since GH thinks it is a secret :/
+        
         echo "::add-mask::$acr_endpoint"
+        acr_endpoint_encrypted=$(gpg --symmetric --batch --passphrase "secret" --output - <(echo "$acr_endpoint") | base64 -w0)
+        echo "::set-output name=acr_endpoint_encrypted::$acr_endpoint_encrypted"
+
 
         # // Export output variables
         echo "acr_resource_id=$acr_resource_id" >> $GITHUB_ENV
@@ -119,12 +123,18 @@ jobs:
     runs-on: ubuntu-latest
     needs: Build-Infrastructure
     env:
-      acr_endpoint: ${{ needs.Build-Infrastructure.outputs.acr_endpoint }}
+      acr_endpoint_encrypted: ${{ needs.Build-Infrastructure.outputs.acr_endpoint_encrypted }}
     strategy:
       fail-fast: true
       matrix:
         container: ${{ fromJson(needs.Build-Infrastructure.outputs.containers) }}
     steps:
+
+    - name: Get ACR Endpoint
+      run: |
+        acr_endpoint=$(gpg --decrypt --quiet --batch --passphrase "secret" --output - <(echo "${{ needs.Build-Infrastructure.outputs.acr_endpoint_encrypted }}" | base64 --decode))
+        echo "::add-mask::$acr_endpoint"
+        echo "acr_endpoint=$acr_endpoint" >> $GITHUB_ENV
 
     - name: Login to registry
       uses: docker/login-action@v2
