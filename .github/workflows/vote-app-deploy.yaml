@@ -128,6 +128,9 @@ jobs:
         container: ${{ fromJson(needs.Build-Infrastructure.outputs.containers) }}
     steps:
 
+    - name: Checkout
+      uses: actions/checkout@v3
+
     - name: Get ACR Endpoint
       run: |
         acr_endpoint=$(gpg --decrypt --quiet --batch --passphrase "${{ secrets.ARM_CLIENT_SECRET }}" --output - <(echo "${{ needs.Build-Infrastructure.outputs.acr_endpoint_encrypted }}" | base64 --decode))
@@ -141,14 +144,26 @@ jobs:
         username: ${{ secrets.ARM_CLIENT_ID }}
         password: ${{ secrets.ARM_CLIENT_SECRET }}
 
-    - name: Build and Push Images to ACR
-      uses: docker/build-push-action@v4.0.0
+    - name: Azure Container Registry Build
+      uses: Azure/acr-build@v1
       with:
-        context: ${{ matrix.container }}
-        build-args: |
-          version=${{ github.sha }}
-        push: true
-        tags: ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
+        registry:                   ${{ env.acr_endpoint }}
+        image:                      ${{ matrix.container }}
+        dockerfile:                 ${{ matrix.container }}/Dockerfile
+        tenant-id:                  ${{ secrets.ARM_TENANT_ID }}
+        service_principal-id:       ${{ secrets.ARM_CLIENT_ID }}
+        service_principal-password: ${{ secrets.ARM_CLIENT_SECRET }}
+        tags:                       ${{ github.sha }}
+
+
+    # - name: Build and Push Images to ACR
+    #   uses: docker/build-push-action@v4.0.0
+    #   with:
+    #     context: ${{ matrix.container }}
+    #     build-args: |
+    #       version=${{ github.sha }}
+    #     push: true
+    #     tags: ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
 
 
     # - name: Get artifact name
