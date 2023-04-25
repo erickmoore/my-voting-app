@@ -78,6 +78,8 @@ jobs:
     - name: Install Sysdig ACR Scanner
       run: |
 
+        helm repo add sysdig https://charts.sysdig.com
+        helm repo update
         helm upgrade --install registry-scanner sysdig/registry-scanner --version=1 \
           --set config.secureBaseURL=${{ env.SYSDIG_API_URL }} \
           --set config.secureAPIToken=${{ SYSDIG_SECURE_TOKEN }} \
