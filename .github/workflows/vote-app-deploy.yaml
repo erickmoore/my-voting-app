@@ -154,7 +154,7 @@ jobs:
     #     tag:                        ${{ github.sha }}
 
     - name: Push Images to ACR
-      uses: azure/docker-login@v2.1.0
+      uses: docker/docker-login@v2.1.0
       with:
         login-server: ${{ secrets.ACR_ENDPOINT }}
         username:     ${{ secrets.ACR_USERNAME }}
