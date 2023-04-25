@@ -80,7 +80,7 @@ jobs:
 
         helm upgrade --install registry-scanner sysdig/registry-scanner --version=1 \
           --set config.secureBaseURL=${{ env.SYSDIG_API_URL }} \
-          --set config.secureAPIToken=${{ SYSDIG_SECURE_TOKEN }} \
+          --set config.secureAPIToken=${{ secrets.SYSDIG_SECURE_TOKEN }} \
           --set config.registryType=acr \
           --set config.registryURL=${{ env.acr_endpoint }} \
           --set config.registryUser=${{ secrets.ACR_USERNAME }} \
