@@ -130,38 +130,50 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
     - name: Get ACR Endpoint
       run: |
+        echo "::add-mask::$acr_endpoint_encrypted"
+        echo "::add-mask::$acr_endpoint"
         acr_endpoint=$(gpg --decrypt --quiet --batch --passphrase "${{ secrets.ARM_CLIENT_SECRET }}" --output - <(echo "${{ env.acr_endpoint_encrypted }}" | base64 --decode))
         echo "acr_endpoint=$acr_endpoint" >> $GITHUB_ENV
 
-    - name: Login to registry
-      uses: docker/login-action@v2
-      with:
-        registry: ${{ env.acr_endpoint }}
-        username: ${{ secrets.ARM_CLIENT_ID }}
-        password: ${{ secrets.ARM_CLIENT_SECRET }}
-
-    - name: Azure Container Registry Build
-      uses: Azure/acr-build@v1
-      with:
-        registry:                   ${{ env.acr_endpoint }}
-        image:                      ${{ matrix.container }}
-        dockerfile:                 ${{ matrix.container }}/Dockerfile
-        tenant:                     ${{ secrets.ARM_TENANT_ID }}
-        service_principal:          ${{ secrets.ACR_WORKFLOW_ID }}
-        service_principal_password: ${{ secrets.ACR_WORFLOW_PASSWORD }}
-        tag:                        ${{ github.sha }}
-
-
-    # - name: Build and Push Images to ACR
-    #   uses: docker/build-push-action@v4.0.0
+    # - name: Login to registry
+    #   uses: docker/login-action@v2
     #   with:
-    #     context: ${{ matrix.container }}
-    #     build-args: |
-    #       version=${{ github.sha }}
-    #     push: true
-    #     tags: ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
+    #     registry: ${{ env.acr_endpoint }}
+    #     username: ${{ secrets.ARM_CLIENT_ID }}
+    #     password: ${{ secrets.ARM_CLIENT_SECRET }}
+
+    # - name: Azure Container Registry Build
+    #   uses: Azure/acr-build@v1
+    #   with:
+    #     registry:                   ${{ env.acr_endpoint }}
+    #     image:                      ${{ matrix.container }}
+    #     dockerfile:                 ${{ matrix.container }}/Dockerfile
+    #     tenant:                     ${{ secrets.ARM_TENANT_ID }}
+    #     service_principal:          ${{ secrets.ACR_WORKFLOW_ID }}
+    #     service_principal_password: ${{ secrets.ACR_WORFLOW_PASSWORD }}
+    #     tag:                        ${{ github.sha }}
+
+    - name: 'Login to ACR'
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ env.acr_endpoint }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+
+
+    - name: Build and Push Images to ACR
+      uses: docker/build-push-action@v4.0.0
+      with:
+        context: ${{ matrix.container }}
+        push: true
+        tags: ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ github.sha }}
 
 
     # - name: Get artifact name
