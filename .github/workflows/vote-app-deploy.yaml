@@ -149,8 +149,8 @@ jobs:
         image:                      ${{ matrix.container }}
         dockerfile:                 ${{ matrix.container }}/Dockerfile
         tenant-id:                  ${{ secrets.ARM_TENANT_ID }}
-        service_principal-id:       ${{ secrets.ARM_CLIENT_ID }}
-        service_principal-password: ${{ secrets.ARM_CLIENT_SECRET }}
+        service_principal:          ${{ secrets.ARM_CLIENT_ID }}
+        service_principal_password: ${{ secrets.ARM_CLIENT_SECRET }}
         tags:                       ${{ github.sha }}
 
 
