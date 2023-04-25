@@ -74,6 +74,19 @@ jobs:
         resource-group: ${{ env.rg_name }}
         cluster-name: ${{ env.aks_name }}
         
+
+    - name: Install Sysdig ACR Scanner
+      run: |
+
+        helm upgrade --install registry-scanner sysdig/registry-scanner --version=1 \
+          --set config.secureBaseURL=${{ env.SYSDIG_API_URL }} \
+          --set config.secureAPIToken=${{ SYSDIG_SECURE_TOKEN }} \
+          --set config.registryType=acr \
+          --set config.registryURL=${{ env.acr_endpoint }} \
+          --set config.registryUser=${{ secrets.ACR_USERNAME }} \
+          --set config.registryPassword=${{ secrets.ACR_PASSWORD }}
+
+
     - name: Install Sysdig Agents in AKS
       run: |
 
@@ -85,7 +98,7 @@ jobs:
           --set global.sysdig.region=us4 \
           --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
           --set global.kspm.deploy=true \
-          --set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=true \
+          --set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=false \
           --set global.clusterConfig.name=${{ env.aks_name }} \
           sysdig/sysdig-deploy
 
