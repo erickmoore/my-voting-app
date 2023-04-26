@@ -84,8 +84,8 @@ jobs:
           --set config.secureAPIToken=${{ secrets.SYSDIG_SECURE_TOKEN }} \
           --set config.registryType=acr \
           --set config.registryURL=${{ env.acr_endpoint }} \
-          --set config.registryUser=${{ secrets.ACR_USERNAME }} \
-          --set config.registryPassword=${{ secrets.ACR_PASSWORD }}
+          --set config.registryUser=Sysdig \
+          --set config.registryPassword=${{ secrets.ACR_TOKEN }}
 
 
     - name: Install Sysdig Agents in AKS
