@@ -74,15 +74,15 @@ jobs:
         chmod +x ./sysdig-cli-scanner
         SECURE_API_TOKEN=${{ secrets.SYSDIG_SECURE_TOKEN }} ./sysdig-cli-scanner --apiurl ${{ env.SYSDIG_API_URL }} docker://${{ matrix.container }}:local --console-log
   
-    - name: Save Container Images
-      run: |
+    # - name: Save Container Images
+    #   run: |
 
-        FILENAME=$(echo "${{ matrix.container }}" | tr '/' '_')
-        echo "FILENAME=${FILENAME}" >> $GITHUB_ENV
-        docker save -o ${FILENAME}_image.tar ${{ matrix.container }}:local
+    #     FILENAME=$(echo "${{ matrix.container }}" | tr '/' '_')
+    #     echo "FILENAME=${FILENAME}" >> $GITHUB_ENV
+    #     docker save -o ${FILENAME}_image.tar ${{ matrix.container }}:local
 
-    - name: Upload Container Tarball Artifacts
-      uses: actions/upload-artifact@v3.1.2
-      with:
-        name: ${{ env.FILENAME }}
-        path: ./${{ env.FILENAME }}_image.tar
+    # - name: Upload Container Tarball Artifacts
+    #   uses: actions/upload-artifact@v3.1.2
+    #   with:
+    #     name: ${{ env.FILENAME }}
+    #     path: ./${{ env.FILENAME }}_image.tar

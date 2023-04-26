@@ -20,7 +20,7 @@ permissions:
 
 env:
   DEPLOY_NAME: sysdigvoteapp
-  CONTAINERS: '[ "voteapp/worker", "voteapp/vote", "voteapp/result" ]'  
+  CONTAINERS: '[ "voteapp/worker", "voteapp/vote", "voteapp/result" ]'
   VERSION: latest
   SYSDIG_API_URL: https://app.us4.sysdig.com/
   SYSDIG_K8S_AGENT_URL: https://download.sysdig.com/stable/install-agent-kubernetes
@@ -31,7 +31,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       containers: ${{ env.CONTAINERS }}
-      acr_endpoint: ${{ env.acr_endpoint }}
       rg_name: ${{ env.rg_name }}
       aks_name: ${{ env.aks_name }}
     env:
@@ -51,7 +50,7 @@ jobs:
       run: |
 
         # // Deploy templates
-        az deployment sub create --name ${{ env.DEPLOY_NAME }} --location eastus2 --template-file templates/bicep/main.bicep --parameters logId=${{ env.logId }}
+        az deployment sub create --name ${{ env.DEPLOY_NAME }} --location eastus2 --template-file templates/bicep/main.bicep
         
         # // Get names from deployment output
         rg_name=$(az deployment sub show --name ${{ env.DEPLOY_NAME }} --query 'properties.outputs.rgName.value' --output tsv)
@@ -115,44 +114,80 @@ jobs:
   Push-Images-to-ACR:
     runs-on: ubuntu-latest
     needs: Build-Infrastructure
-    env:
-      acr_endpoint: ${{ needs.Build-Infrastructure.outputs.acr_endpoint }}
     strategy:
       fail-fast: true
       matrix:
         container: ${{ fromJson(needs.Build-Infrastructure.outputs.containers) }}
     steps:
 
-    - name: Get artifact name
-      run: |
+    - name: Checkout
+      uses: actions/checkout@v3
 
-        ARTIFACT=$(echo "${{ matrix.container }}" | tr '/' '_')
-        echo "ARTIFACT=${ARTIFACT}" >> $GITHUB_ENV
-
-    - name: Download workflow artifact
-      uses: dawidd6/action-download-artifact@v2.27.0
+    - name: Azure Login
+      uses: azure/login@v1
       with:
-        workflow: vote-app-security-scan.yaml
-        workflow_conclusion: completed
-        name: ${{ env.ARTIFACT }}
-
-    - name: Load Container Images
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+    - name: Build Local Container
       run: |
 
-        docker load -i ${{ env.ARTIFACT }}_image.tar
-        
-    - name: Login to registry
+        FOLDER_NAME=$(echo "${{ matrix.container }}" | cut -d '/' -f 2)
+        docker buildx build --no-cache $FOLDER_NAME/ -t ${{ matrix.container }}:${{ github.sha }} --platform linux/amd64    
+
+    # - name: Login to registry
+    #   uses: docker/login-action@v2
+    #   with:
+    #     registry: ${{ env.acr_endpoint }}
+    #     username: ${{ secrets.ARM_CLIENT_ID }}
+    #     password: ${{ secrets.ARM_CLIENT_SECRET }}
+
+    # - name: Azure Container Registry Build
+    #   uses: Azure/acr-build@v1
+    #   with:
+    #     registry:                   ${{ env.acr_endpoint }}
+    #     image:                      ${{ matrix.container }}
+    #     dockerfile:                 ${{ matrix.container }}/Dockerfile
+    #     tenant:                     ${{ secrets.ARM_TENANT_ID }}
+    #     service_principal:          ${{ secrets.ACR_WORKFLOW_ID }}
+    #     service_principal_password: ${{ secrets.ACR_WORFLOW_PASSWORD }}
+    #     tag:                        ${{ github.sha }}
+
+    - name: Login and Push to ACR
       uses: docker/login-action@v2
       with:
-        registry: ${{ env.acr_endpoint }}
-        username: ${{ secrets.ARM_CLIENT_ID }}
-        password: ${{ secrets.ARM_CLIENT_SECRET }}
+        registry: ${{ secrets.ACR_ENDPOINT }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+    - run: |
+        
+        docker tag ${{ matrix.container }}:${{ github.sha }} ${{ secrets.ACR_ENDPOINT }}/${{ matrix.container }}:${{ github.sha }}
+        docker push ${{ secrets.ACR_ENDPOINT }}/${{ matrix.container }}:${{ github.sha }}
+  
+    # - name: Get artifact name
+    #   run: |
 
-    - name: Load and push container images from tarballs
-      run: |
+    #     ARTIFACT=$(echo "${{ matrix.container }}" | tr '/' '_')
+    #     echo "ARTIFACT=${ARTIFACT}" >> $GITHUB_ENV
 
-        docker tag ${{ matrix.container }}:local ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
-        docker push ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
+    # - name: Download workflow artifact
+    #   uses: dawidd6/action-download-artifact@v2.27.0
+    #   with:
+    #     workflow: vote-app-security-scan.yaml
+    #     workflow_conclusion: completed
+    #     name: ${{ env.ARTIFACT }}
+
+    # - name: Load Container Images
+    #   run: |
+
+    #     docker load -i ${{ env.ARTIFACT }}_image.tar
+        
+
+
+    # - name: Load and push container images from tarballs
+    #   run: |
+
+    #     docker tag ${{ matrix.container }}:local ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
+    #     docker push ${{ env.acr_endpoint }}/${{ matrix.container }}:${{ env.VERSION }}
 
 
   Deploy-App:
@@ -184,6 +219,16 @@ jobs:
     - name: Deploy Voting App
       run: |
 
+        sudo apt-get update
+        sudo apt-get install -y gettext-base
+
+        export IMAGE_TAG=${{ github.sha }}
+
+        mkdir k8s-temp
+        for file in k8s-specifications/*.yaml; do
+          envsubst < "$file" > "k8s-temp/$(basename "$file")"
+        done
+
         kubectl get namespace voting-app || kubectl create namespace voting-app
-        kubectl apply -f k8s-specifications/ --namespace voting-app
-        
+        kubectl apply -f k8s-temp/ --namespace voting-app
+        kubectl label namespace voting-app name=voting-app external=true environment=prod --overwrite

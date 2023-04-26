@@ -7,7 +7,6 @@ param location  string = 'eastus2'
 param purpose   string = 'sysdig'
 param cidr      string = '10.175.0.0/20'
 param stgName   string = 'sysdigtftest'
-param logId     string = ''
 
 // Variables
 //
@@ -67,11 +66,11 @@ module aks 'aks.bicep' = {
   scope: rg
   name: 'deploy-aks'
   params: {
-    location:       rg.location
-    name:           aksNaming.outputs.resourceName
-    publicKey:      publicKeyData
-    subnetId:       aksVNet.outputs.subnetId
-    logWorkspaceId: logId
+    location:   rg.location
+    name:       aksNaming.outputs.resourceName
+    publicKey:  publicKeyData
+    subnetId:   aksVNet.outputs.subnetId
+    vmSize:     'Standard_B2ms'
   }
 }
 
@@ -81,6 +80,8 @@ module acr 'acr.bicep' = {
   params: {
     acrName:  acrNaming.outputs.resourceName
     location: rg.location
+    adminUser: true
+    anonAccess: false
   }
 }
 

@@ -1,6 +1,7 @@
 param location    string 
 param acrName     string
 param anonAccess  bool = false
+param adminUser   bool = true
 
 resource acr 'Microsoft.ContainerRegistry/registries@2022-02-01-preview' = {
   name: acrName
@@ -9,7 +10,7 @@ resource acr 'Microsoft.ContainerRegistry/registries@2022-02-01-preview' = {
     name: 'Standard'
   }
   properties: {
-    adminUserEnabled: false
+    adminUserEnabled: adminUser
     anonymousPullEnabled: anonAccess
   }
 }
