@@ -19,10 +19,10 @@ spec:
         name: vote
         resources:
           limits:
-            cpu: 150m
+            cpu: 50m
             memory: 256Mi
           requests:
-            cpu: 50m
+            cpu: 10m
             memory: 128Mi       
         ports:
         - containerPort: 80
