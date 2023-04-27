@@ -101,6 +101,8 @@ jobs:
           --set global.kspm.deploy=true \
           --set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=false \
           --set global.clusterConfig.name=${{ env.aks_name }} \
+          --set resources.requests.cpu=10m \
+          --set resources.limits.cpu=100 \          
           sysdig/sysdig-deploy
 
 
