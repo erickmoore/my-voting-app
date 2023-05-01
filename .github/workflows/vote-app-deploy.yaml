@@ -79,7 +79,7 @@ jobs:
 
         helm repo add sysdig https://charts.sysdig.com
         helm repo update
-        helm upgrade --install registry-scanner sysdig/registry-scanner --version=1 \
+        helm upgrade --install registry-scanner sysdig/registry-scanner --version=1 --force \
           --set config.secureBaseURL=${{ env.SYSDIG_API_URL }} \
           --set config.secureAPIToken=${{ secrets.SYSDIG_SECURE_TOKEN }} \
           --set config.registryType=acr \
@@ -94,13 +94,15 @@ jobs:
         helm repo add sysdig https://charts.sysdig.com
         helm repo update
         helm upgrade --install sysdig-agent --namespace sysdig-agent \
-          --create-namespace \
+          --create-namespace --force \
           --set global.sysdig.accessKey=${{ secrets.SYSDIG_AGENT_TOKEN }} \
           --set global.sysdig.region=us4 \
           --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
           --set global.kspm.deploy=true \
           --set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=false \
           --set global.clusterConfig.name=${{ env.aks_name }} \
+          --set resources.requests.cpu=10m \
+          --set resources.limits.cpu=100 \
           sysdig/sysdig-deploy
 
 
